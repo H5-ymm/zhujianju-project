@@ -1,0 +1,65 @@
+{
+  "id": "1654495",
+  "name": "ymm",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "建筑业",
+  "glyphs": [
+    {
+      "icon_id": "9241153",
+      "name": "项目",
+      "font_class": "xiangmu1",
+      "unicode": "e64c",
+      "unicode_decimal": 58956
+    },
+    {
+      "icon_id": "12683892",
+      "name": "数据",
+      "font_class": "icon_huabanfuben",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "5067809",
+      "name": "数据字典管理",
+      "font_class": "shujuzidian",
+      "unicode": "e638",
+      "unicode_decimal": 58936
+    },
+    {
+      "icon_id": "2044429",
+      "name": "工人(1)",
+      "font_class": "gongren",
+      "unicode": "e650",
+      "unicode_decimal": 58960
+    },
+    {
+      "icon_id": "4406894",
+      "name": "项目",
+      "font_class": "xiangmu",
+      "unicode": "e651",
+      "unicode_decimal": 58961
+    },
+    {
+      "icon_id": "7519231",
+      "name": "建筑业",
+      "font_class": "jianzhuye",
+      "unicode": "e673",
+      "unicode_decimal": 58995
+    },
+    {
+      "icon_id": "8554674",
+      "name": "企业管理",
+      "font_class": "qiyeguanli",
+      "unicode": "e640",
+      "unicode_decimal": 58944
+    },
+    {
+      "icon_id": "12694068",
+      "name": "用户权限",
+      "font_class": "yonghuquanxian",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    }
+  ]
+}
