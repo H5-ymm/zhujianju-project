@@ -14,7 +14,7 @@ import {
     asyncRouterMap
 } from "./router/index";
 // permissiom judge
-function hasRole(authRules, permissionAuthRules) {
+function hasRole (authRules, permissionAuthRules) {
     if (!authRules || authRules.length <= 0) {
         return false;
     }
@@ -28,7 +28,7 @@ function hasRole(authRules, permissionAuthRules) {
  * @param authRules
  * @param route
  */
-function hasRouterRole(authRules, route) {
+function hasRouterRole (authRules, route) {
     if (
         authRules.indexOf("admin") >= 0 ||
         !route.meta ||
@@ -46,7 +46,7 @@ function hasRouterRole(authRules, route) {
  * @param asyncRouterMap
  * @param authRules
  */
-function filterAsyncRouter(asyncRouterMap, authRules) {
+function filterAsyncRouter (asyncRouterMap, authRules) {
     const accessedRouters = asyncRouterMap.filter(route => {
         if (hasRouterRole(authRules, route)) {
             if (route.children && route.children.length) {
@@ -60,7 +60,7 @@ function filterAsyncRouter(asyncRouterMap, authRules) {
 }
 
 // register global progress.
-const whiteList = ["/login", "/401", "/404", "/500", '/workerView', 'signed']; // 不重定向白名单
+const whiteList = ["/login", "/401", "/404", "/500", '/workerView', '/signed']; // 不重定向白名单
 router.beforeEach((to, from, next) => {
     NProgress.start(); // 开启Progress
     if (whiteList.indexOf(to.path) !== -1) {
@@ -100,24 +100,6 @@ router.beforeEach((to, from, next) => {
                             workerRouter
                         );
                     }
-                    // 拉取user_info
-                    // const authRules = data.authRules || [];
-                    // if (
-                    //     !(authRules instanceof Array) ||
-                    //     authRules.length === 0
-                    // ) {
-                    //     Message.error("权限验证失败，请联系管理员~");
-                    //     next({
-                    //         path: "/401",
-                    //         query: {
-                    //             noGoBack: true
-                    //         }
-                    //     });
-                    //     NProgress.done();
-                    //     return;
-                    // }
-
-
                     // 生成可访问的路由表
                     router.addRoutes(accessedRouters); // 动态添加可访问路由表
                     next({
@@ -128,7 +110,7 @@ router.beforeEach((to, from, next) => {
                         .dispatch("filterRouter", {
                             accessedRouters
                         })
-                        .then(() => {});
+                        .then(() => { });
                 })
                 .catch(() => {
                     console.log(1)
@@ -170,7 +152,8 @@ router.beforeEach((to, from, next) => {
             }
         });
     }); // 否则全部重定向到登录页
-    NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
+    NProgress.done();
+    // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
 });
 
 router.afterEach(() => {

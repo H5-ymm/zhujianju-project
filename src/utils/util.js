@@ -27,3 +27,15 @@ export const getIsWxClient = () => {
     }
     return false;
 };
+export const getQueryString = name => {
+    let href = window.location.href
+    let query = href.substring(href.indexOf('?') + 1);
+    let vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+        let pair = vars[i].split("=");
+        if (pair[0] == name) {
+            return pair[1];
+        }
+    }
+    return (false);
+}

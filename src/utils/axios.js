@@ -61,7 +61,7 @@ service.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-export function post(url, data) {
+export function post (url, data) {
     return new Promise((resolve, reject) => {
         service.post(`${BASE_URL}${url}`, QS.stringify(data || {}))
             .then(res => {

@@ -6,23 +6,23 @@ import {
     post
 } from "../../utils/axios";
 // 获取信息
-export function userInfo() {
+export function userInfo () {
     return post('/login/userInfo', {})
 }
-export function loginName(userName, pwd) {
+export function loginName (userName, pwd) {
     let data = {
         userName,
         pwd
     }
     return post('/login/index', data)
 }
-export function logout(uid, token) {
+export function logout (uid, token) {
     let data = {
         uid,
         token
     }
-    return post('/admin/auth/login/out', data)
+    return post('/login/out', data)
 }
-export function password(data) {
+export function password (data) {
     return post('/login/password', data)
 }
