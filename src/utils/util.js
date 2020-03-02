@@ -39,3 +39,7 @@ export const getQueryString = name => {
     }
     return (false);
 }
+
+export const getImg = img => {
+    return 'http://www.tp1.cn/zhujianj' + img
+}

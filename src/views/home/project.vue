@@ -18,7 +18,7 @@
 			max-height="500px"
 		>
 		<el-table-column label="项目名称" align="center" prop="name" width="100px"></el-table-column>
-			<el-table-column :label="item.name" :key="index" v-for="(item,index) in options"  width="100px" align="center">
+			<el-table-column :label="item.name" v-if="options.length" :key="index" v-for="(item,index) in options"  width="100px" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.typelist[index]}}</span>
 				</template>
@@ -53,25 +53,7 @@ export default {
 			loading: true,
 			index: null,
 			formName: null,
-			options: [{
-				name: '大的'
-			}, {
-				name: '的'
-			}, {
-				name: '大1的'
-			}, {
-				name: '大的'
-			}, {
-				name: '的'
-			}, {
-				name: '大1的'
-			}, {
-				name: '大1的'
-			}, {
-				name: '大1的'
-			}, {
-				name: '大1的'
-			}],
+			options: [],
 			typelist: []
 		};
 	},
@@ -133,9 +115,9 @@ export default {
 		this.query.limit = parseInt(this.query.limit);
 		// 加载表格数据
 		this.getList();
-		// this.getType(3).then(res => {
-		// 	this.options = res
-		// })
+		this.getType(3).then(res => {
+			this.options = res
+		})
 	}
 }
 

@@ -24,6 +24,12 @@
       <el-table-column label="建筑规模" width="100px" prop="scale" align="center"></el-table-column>
       <el-table-column label="层数" width="100px" prop="layers" align="center"></el-table-column>
       <el-table-column label="工程造价" width="100px" prop="engineering_cost" align="center"></el-table-column>
+      <el-table-column label="二维码" width="100px" prop="engineering_cost" align="center">
+        <template slot-scope="scope">
+          <img :src="getImg(scope.row.qrcode)" v-if="scope.row.qrcode" class="qrcode" alt="">
+          <span v-else class="qrcode-status">未生成</span>
+        </template>
+      </el-table-column>
       <el-table-column label="计划开工日期" width="140px" align="center">
         <template slot-scope="scope">
           <span>{{scope.row.starttime?$moment.unix(scope.row.starttime).format('YYYY-MM-DD HH:mm'):''}}</span>
@@ -343,8 +349,8 @@ import {
 import { getCorporationCompany } from "../../api/company/index"
 import { geTypeAll } from "../../api/file/data"
 import selectCity from "../../components/selectCity.vue";
-import { Promise, reject } from 'q';
-import { resolve } from 'url';
+
+import { getImg } from "../../utils/util.js";
 const formJson = {
   username: '',
   password: '',
@@ -465,6 +471,7 @@ export default {
     };
   },
   methods: {
+    getImg,
     districtChange(val) {
       this.formData.provinceid = val[0]
       this.formData.cityid = val[1]
@@ -703,5 +710,12 @@ export default {
   float: right;
   color: #8492a6;
   font-size: 13px;
+}
+.qrcode {
+  width: 80px;
+  height: 80px;
+}
+.qrcode-status {
+  color: #f56c6c;
 }
 </style>

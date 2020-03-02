@@ -8,7 +8,7 @@
 				<el-input v-model="formData.name" placeholder="请输入工人名称" class="width220" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="工种" prop="job_type">
-				<el-select v-model="formData.job_type" :disabled="readonly" class="width240" placeholder="请选择">
+				<el-select v-model="formData.job_type" :disabled="readonly" class="width220" placeholder="请选择">
 					<el-option v-for="(item, index) in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>
 			</el-form-item>
@@ -16,7 +16,7 @@
 				<el-input v-model="formData.id_card" placeholder="请输入身份证" class="width220" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="性别" placeholder="请选择性别">
-				<el-radio-group class="width240" v-model="formData.sex">
+				<el-radio-group class="width220" v-model="formData.sex">
 					<el-radio :label="1" :disabled="readonly">男</el-radio>
 					<el-radio :label="2" :disabled="readonly">女</el-radio>
 				</el-radio-group>
@@ -25,7 +25,7 @@
 				<el-input class="width220" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="地址" required>
-				<div class="width240 select-input">
+				<div class="width220 select-input">
 					<selectCity @change="districtChange" :address="[]"></selectCity>
 				</div>
 			</el-form-item>
@@ -62,7 +62,7 @@ export default {
 	components: {
 		selectCity: selectCity
 	},
-	data () {
+	data() {
 		let validatereg = (rule, value, callback) => {
 			//验证用户名是否合法
 			let reg = /^1[3456789]\d{9}$/
@@ -128,7 +128,7 @@ export default {
 			openid: ''
 		}
 	},
-	created () {
+	created() {
 		this.team_id = getQueryString('team_id')
 		this.openid = getQueryString('openid');
 		this.formData.openid = sessionStorage.getItem('zhujianjuOpenid')
@@ -137,13 +137,13 @@ export default {
 		})
 	},
 	methods: {
-		handleClose () {
+		handleClose() {
 
 		},
-		handleOk () {
+		handleOk() {
 
 		},
-		changeInput (e) {
+		changeInput(e) {
 			// getworkmanbytel({ tel: e }).then(res => {
 			// 	if (res) {
 			// 		this.id = res.id
@@ -154,7 +154,7 @@ export default {
 			// 	}
 			// })
 		},
-		getTodaytemperature (id) {
+		getTodaytemperature(id) {
 			getworkmanbytel({ id }).then(res => {
 				if (res) {
 					this.temperature = res
@@ -163,12 +163,12 @@ export default {
 				}
 			})
 		},
-		districtChange (val) {
+		districtChange(val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]
 			this.formData.areaid = val[2]
 		},
-		getType (pid) {
+		getType(pid) {
 			let params = {
 				pid: pid,
 				keyword: ''
@@ -179,7 +179,7 @@ export default {
 				})
 			})
 		},
-		resetForm () {
+		resetForm() {
 			if (this.$refs["dataForm"]) {
 				// 清空验证信息表单
 				this.$refs["dataForm"].clearValidate();
@@ -187,7 +187,7 @@ export default {
 				this.$refs["dataForm"].resetFields();
 			}
 		},
-		setBindopenid () {
+		setBindopenid() {
 			let params = {
 				openid: this.params.openid,
 				id: this.id
@@ -200,7 +200,7 @@ export default {
 				}
 			});
 		},
-		bindWorkProject () {
+		bindWorkProject() {
 			let params = {
 				item_id: this.item_id,
 				id: this.id
@@ -215,7 +215,7 @@ export default {
 				}
 			});
 		},
-		addWorkBind (params) {
+		addWorkBind(params) {
 			addWork(params).then(response => {
 				if (response) {
 					this.setBindopenid()
@@ -228,7 +228,7 @@ export default {
 				this.resetForm();
 			})
 		},
-		formSubmit () {
+		formSubmit() {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					if (this.readonly) {
