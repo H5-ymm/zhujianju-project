@@ -74,20 +74,6 @@ export default {
   data() {
     return {
       value: '',
-      postOption: [
-        {
-          label: '1',
-          value: 1
-        },
-        {
-          label: '2',
-          value: 2
-        },
-        {
-          label: '3',
-          value: 3
-        }
-      ],
       list: [],
       modalData: {},
       loading: false,
@@ -131,7 +117,7 @@ export default {
       this.formVisible = false
     },
     handleCurrentChange(val) {
-      this.params.page = val
+      this.query.page = val
       this.getList()
     },
     add() {
