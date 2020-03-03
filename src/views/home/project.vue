@@ -17,7 +17,7 @@
 			v-loading="loading"
 			:data="list"
 			style="width: 100%;"
-			max-height="500px"
+			max-height="1000px"
 		>
 			<el-table-column label="项目名称" align="center" prop="name" width="120px"></el-table-column>
 			<el-table-column

@@ -25,7 +25,7 @@
       ref="print"
       style="width: 100%;"
       class="common-table"
-      max-height="500px"
+      max-height="1000px"
     >
       <el-table-column label="工程名称" prop="name" width="100px" align="center"></el-table-column>
       <el-table-column label="二维码" width="100px" align="center">

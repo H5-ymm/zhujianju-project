@@ -186,7 +186,7 @@ $light_gray: #eee;
   .title {
     font-size: 26px;
     color: $light_gray;
-    margin: 0 auto 0.5333rem auto;
+    margin: 0 auto 1rem auto;
     text-align: center;
     font-weight: bold;
   }

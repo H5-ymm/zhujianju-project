@@ -29,7 +29,7 @@
             v-loading="loading"
             :data="list"
             style="width: 100%;"
-            max-height="500px"
+            max-height="600px"
           >
             <el-table-column type="index" label="序号" width="50" align="center"></el-table-column>
             <el-table-column label="名称" align="center" prop="name"></el-table-column>

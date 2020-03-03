@@ -39,7 +39,7 @@
 			v-loading="loading"
 			:data="list"
 			style="width: 100%;"
-			max-height="500px"
+			max-height="1000px"
 		>
 			<el-table-column label="工人姓名" align="center" prop="name" width="110px"></el-table-column>
 			<el-table-column label="当天体温" width="110px" align="center">

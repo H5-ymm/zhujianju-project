@@ -16,7 +16,7 @@
 			class="common-table"
 			:data="list"
 			style="width: 100%;"
-			max-height="500px"
+		  max-height="1000px"
 		>
 			<el-table-column label="公司名称" align="center" prop="com_name"></el-table-column>
 			<el-table-column label="公司类型" prop="com_type" align="center"></el-table-column>
