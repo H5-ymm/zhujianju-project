@@ -4,19 +4,19 @@
       <el-form-item class="query-form-item">
         <el-input v-model="query.username" placeholder="用户名"></el-input>
       </el-form-item>
-      <el-form-item class="query-form-item">
+      <!-- <el-form-item class="query-form-item">
         <el-select v-model="query.status" placeholder="状态">
           <el-option label="全部" value=""></el-option>
           <el-option label="正常" value="0"></el-option>
           <el-option label="禁用" value="1"></el-option>
         </el-select>
-      </el-form-item>
+      </el-form-item>-->
       <!-- <el-form-item class="query-form-item">
         <el-select v-model="query.role_id" placeholder="角色">
           <el-option label="全部角色" value=""></el-option>
           <el-option v-for="item in roles" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
-      </el-form-item> -->
+      </el-form-item>-->
       <el-form-item>
         <el-button-group>
           <el-button type="primary" icon="el-icon-refresh" @click="onReset"></el-button>
@@ -34,13 +34,13 @@
     >
       <el-table-column label="用户 ID" align="center" prop="id" fixed></el-table-column>
       <el-table-column label="用户名" prop="username" align="center" fixed></el-table-column>
-      <el-table-column label="状态" align="center">
+      <!-- <el-table-column label="状态" align="center">
         <template slot-scope="scope">
           <el-tag
             :type="scope.row.status | statusFilterType"
           >{{scope.row.status | statusFilterName}}</el-tag>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="登录时间" with="300" align="center" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.last_login_time }}</span>
@@ -77,17 +77,17 @@
         <el-form-item label="确认密码" prop="checkPassword">
           <el-input type="password" v-model="formData.checkPassword" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="状态" prop="status">
+        <!-- <el-form-item label="状态" prop="status">
           <el-radio-group v-model="formData.status">
             <el-radio :label="0">正常</el-radio>
             <el-radio :label="1">禁用</el-radio>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item>-->
         <!-- <el-form-item label="角色" required>
           <el-checkbox-group v-model="rolesList">
             <el-checkbox v-for="item in roles" :key="item.id" :label="item.id">{{item.name}}</el-checkbox>
           </el-checkbox-group>
-        </el-form-item> -->
+        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click.native="hideForm">取消</el-button>
@@ -167,17 +167,17 @@ export default {
           },
           { validator: validatePass2, trigger: "blur" }
         ],
-        status: [
-          { required: true, message: "请选择状态", trigger: "change" }
-        ]
+        // status: [
+        //   { required: true, message: "请选择状态", trigger: "change" }
+        // ]
       },
       editRules: {
         username: [
           { required: true, message: "请输入姓名", trigger: "blur" }
         ],
-        status: [
-          { required: true, message: "请选择状态", trigger: "change" }
-        ]
+        // status: [
+        //   { required: true, message: "请选择状态", trigger: "change" }
+        // ]
       },
       deleteLoading: false
     };
@@ -247,7 +247,7 @@ export default {
       this.formLoading = false;
       this.deleteLoading = false;
       // 清空表单
-      this.$refs["dataForm"].resetFields();
+      this.resetForm();
       return true;
     },
     // 显示表单
@@ -256,10 +256,6 @@ export default {
       this.formData = JSON.parse(JSON.stringify(formJson));
       if (row !== null) {
         this.formData = Object.assign({}, row);
-        console.log(row)
-        if (row.roles) {
-          // this.rolesList = row.roles.split(',')
-        }
       }
       this.formName = "add";
       this.formRules = this.addRules;
@@ -273,12 +269,7 @@ export default {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
           this.formLoading = true;
-          // if (!this.rolesList.length) {
-          //   return this.$message.warning('请选择角色')
-          // }
-          // if (this.rolesList.length) {
-          //   this.formData.roles = this.rolesList.join(',')
-          // }
+          this.formData.status = 0
           delete this.formData.checkPassword
           let data = Object.assign({}, this.formData);
           authAdminSave(data, this.formName).then(response => {
@@ -292,7 +283,7 @@ export default {
             } else {
               this.$message.error("操作失败");
             }
-          });
+          })
         }
       });
     },
@@ -341,7 +332,6 @@ export default {
       return statusMap[status];
     }
   },
-  mounted() { },
   created() {
     // 将参数拷贝进查询对象
     let query = this.$route.query;
@@ -350,7 +340,17 @@ export default {
     // 加载表格数据
     this.getList();
     // 加载角色列表
-    this.getRoleList();
+    // this.getRoleList();
   }
 };
 </script>
+<style lang="scss">
+.query-form {
+  .el-input--suffix .el-input__inner {
+    padding-right: 35px;
+    &:focus {
+      padding-right: 35px;
+    }
+  }
+}
+</style>

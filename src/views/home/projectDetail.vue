@@ -11,7 +11,7 @@
 					ref="dataForm"
 				>
 					<el-form-item label="工程名称">
-						<el-input v-model="formData.name"  class="width240" readonly></el-input>
+						<el-input v-model="formData.name" class="width240" readonly></el-input>
 					</el-form-item>
 					<el-form-item label="项目类别">
 						<el-input v-model="formData.type_name" class="width240" readonly></el-input>
@@ -31,7 +31,7 @@
 					<el-form-item label="建筑层数">
 						<el-input class="width240" v-model="formData.layers" readonly></el-input>
 					</el-form-item>
-					<el-form-item label="工程造价" >
+					<el-form-item label="工程造价">
 						<el-input class="width240" v-model="formData.engineering_cost" readonly></el-input>
 					</el-form-item>
 					<el-form-item label="计划开工日期">
@@ -51,20 +51,22 @@
 					<el-form-item label="建筑工程规划许可证">
 						<el-input class="width240" v-model="formData.license" readonly></el-input>
 					</el-form-item>
+					<el-form-item label="施工许可证">
+						<el-input class="width240" v-model="formData.make_license" readonly></el-input>
+					</el-form-item>
 					<el-form-item label="图纸审查批准编号">
 						<el-input class="width240" v-model="formData.tzscpz" readonly></el-input>
 					</el-form-item>
-					<el-form-item label="监督组" >
-						<el-input
-							class="width240"
-							v-model="formData.monitoring_group"
-							readonly
-						></el-input>
+					<el-form-item label="消防审查合格证号">
+						<el-input class="width240" v-model="formData.firecontrol_license" readonly></el-input>
 					</el-form-item>
-					<el-form-item label="建筑单位/法人">
+					<el-form-item label="监督备案登记号">
+						<el-input class="width240" v-model="formData.monitoring_id" readonly></el-input>
+					</el-form-item>
+					<el-form-item label="建设单位">
 						<div class="width240">
 							<el-input
-								class="width240 select-input"	
+								class="width240 select-input"
 								v-model="formData.construction_info.com_name"
 								readonly
 							></el-input>
@@ -78,11 +80,7 @@
 					</el-form-item>
 					<el-form-item label="勘查单位">
 						<div class="width240">
-							<el-input
-								class="width240 select-input"
-								v-model="formData.survey_info.com_name"
-								readonly
-							></el-input>
+							<el-input class="width240 select-input" v-model="formData.survey_info.com_name" readonly></el-input>
 							<el-input
 								class="width240 select-input"
 								v-model="formData.survey_info.corporation_name"
@@ -93,11 +91,7 @@
 					</el-form-item>
 					<el-form-item label="设计单位负责人">
 						<div class="width240">
-							<el-input
-								class="width240 select-input"
-								v-model="formData.design_info.com_name"
-								readonly
-							></el-input>
+							<el-input class="width240 select-input" v-model="formData.design_info.com_name" readonly></el-input>
 							<el-input
 								class="width240 select-input"
 								v-model="formData.design_info.corporation_name"
@@ -108,11 +102,7 @@
 					</el-form-item>
 					<el-form-item label="施工单位">
 						<div class="width240">
-							<el-input
-								class="width240 select-input"
-								v-model="formData.shigong_info.com_name"
-								readonly
-							></el-input>
+							<el-input class="width240 select-input" v-model="formData.shigong_info.com_name" readonly></el-input>
 							<el-input
 								class="width240 select-input"
 								v-model="formData.shigong_info.corporation_name"
@@ -133,16 +123,12 @@
 								v-model="formData.supervision_info.corporation_name"
 								readonly
 							></el-input>
-							<el-input  v-model="formData.supervision_user" readonly></el-input>
+							<el-input v-model="formData.supervision_user" readonly></el-input>
 						</div>
 					</el-form-item>
 					<el-form-item prop="detection_unit" label="检测单位">
 						<div class="width240">
-							<el-input
-								class="width240 select-input"
-								v-model="formData.detection_info.com_name"
-								readonly
-							></el-input>
+							<el-input class="width240 select-input" v-model="formData.detection_info.com_name" readonly></el-input>
 							<el-input
 								class="width240 select-input"
 								v-model="formData.detection_info.corporation_name"
@@ -150,6 +136,9 @@
 							></el-input>
 							<el-input v-model="formData.detection_user" readonly></el-input>
 						</div>
+					</el-form-item>
+					<el-form-item label="监督组">
+						<el-input class="width240" v-model="formData.monitoring_group" readonly></el-input>
 					</el-form-item>
 				</el-form>
 			</div>
@@ -184,7 +173,6 @@ export default {
 	methods: {
 		getProject(id) {
 			getDetail({ id }).then(res => {
-				console.log(res)
 				this.formData = res
 			})
 		}

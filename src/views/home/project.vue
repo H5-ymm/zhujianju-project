@@ -6,21 +6,35 @@
 			</el-form-item>
 			<el-form-item>
 				<el-button-group>
-					<el-button type="primary" icon="search" @click="onSubmit">查询</el-button>
+					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
+					<el-button type="primary" icon="el-icon-document-copy" v-print="'#printTest'">打印</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
 		<el-table
+			id="printTest"
 			class="common-table"
 			v-loading="loading"
 			:data="list"
 			style="width: 100%;"
 			max-height="500px"
 		>
-		<el-table-column label="项目名称" align="center" prop="name" width="100px"></el-table-column>
-			<el-table-column :label="item.name" v-if="options.length" :key="index" v-for="(item,index) in options"  width="100px" align="center">
+			<el-table-column label="项目名称" align="center" prop="name" width="120px"></el-table-column>
+			<el-table-column
+				:label="item.name"
+				v-if="options.length"
+				:key="index"
+				v-for="(item,index) in options"
+				width="100px"
+				align="center"
+			>
 				<template slot-scope="scope">
 					<span>{{scope.row.typelist[index]}}</span>
+				</template>
+			</el-table-column>
+			<el-table-column label="合计" align="center" min-width="120px" fixed="right">
+				<template slot-scope="scope">
+					<span>{{scope.row.typelist[scope.row.typelist.length-1]}}</span>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -32,7 +46,6 @@
 		></el-pagination>
 	</div>
 </template>
-
 <script>
 import {
 	listCount
@@ -41,7 +54,6 @@ import { geTypeAll } from "../../api/file/data"
 export default {
 	data() {
 		return {
-			roles: [],
 			query: {
 				keyword: '',
 				page: 1,
@@ -52,17 +64,11 @@ export default {
 			total: 0,
 			loading: true,
 			index: null,
-			formName: null,
 			options: [],
 			typelist: []
 		};
 	},
 	methods: {
-		districtChange(val) {
-			this.formData.provinceid = val[0]
-			this.formData.cityid = val[1]
-			this.formData.areaid = val[2]
-		},
 		onReset() {
 			this.query = {
 				keyword: '',
@@ -79,6 +85,8 @@ export default {
 			return new Promise((resolve, reject) => {
 				geTypeAll(params).then(res => {
 					resolve(res)
+				}).catch(() => {
+					reject()
 				})
 			})
 		},
@@ -116,7 +124,7 @@ export default {
 		// 加载表格数据
 		this.getList();
 		this.getType(3).then(res => {
-			this.options = res
+			this.options = res || []
 		})
 	}
 }

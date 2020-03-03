@@ -6,7 +6,7 @@
             :class="{'slide-hide': isCollapse, 'slide-in-left': menuShow}"
         >
             <div class="logo">
-                <span>泾川县建筑工程实名制管理平台</span>
+                <span>泾川县建设工程监管平台</span>
             </div>
             <el-menu
                 class="menu"
@@ -65,7 +65,7 @@
                         </div>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item>
-                                <span  command="0">退出登录</span>
+                                <span command="0">退出登录</span>
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
@@ -270,7 +270,7 @@ export default {
                                 this.$refs["passwordFormData"].resetFields();
                                 this.passwordFormVisible = false;
                                 this.$store.dispatch("loginOut").then(() => {
-                                    
+
                                 });
                             }
                         })

@@ -17,8 +17,6 @@ const service = axios.create({
 // request拦截器
 service.interceptors.request.use(
     config => {
-        // let flag = config.url.indexOf('typeAll') > -1
-        console.log(store.getters.adminId+'你会')
         if (store.getters.adminId && store.getters.token) {
             config.headers = {
                 'X-Adminid': store.getters.adminId,
@@ -38,10 +36,15 @@ service.interceptors.request.use(
 service.interceptors.response.use(
     response => {
         const data = response.data;
-        if (data.code) {
-            if (data.code === 2) {
+        console.log(response)
+        if (data && data.code) {
+            if (data.code === 2 || data.code == 20006) {
                 store.dispatch("fedLogout").then(() => {
-                    Message.error("验证失败,请重新登录");
+                    if (data.code === 2) {
+                        Message.error("验证失败,请重新登录");
+                    } else {
+                        Message.error("登录过期,请重新登录");
+                    }
                     router.push({
                         path: "/login",
                         query: {

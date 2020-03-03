@@ -26,37 +26,26 @@
             ref="ruleForm"
             label-position="left"
         >
-            <h3 class="title">泾川县建筑工程实名制管理平台</h3>
+            <h3 class="title">泾川县建设工程监管平台</h3>
             <el-form-item prop="username" class="item">
                 <el-input
-                    placeholder="邮箱"
+                    placeholder="账户"
                     name="userName"
                     autocomplete="on"
                     v-model="ruleForm.userName"
                 >
-                    <i slot="prefix" class="el-input__icon">
-                        <icon-svg icon-class="user"/>
-                    </i>
+                    <i slot="prefix" class="el-input__icon el-icon-user"></i>
                 </el-input>
             </el-form-item>
             <el-form-item prop="password" class="item">
-                <!--<span class="svg-container">-->
-                <!--<icon-svg icon-class="pwd"/>-->
-                <!--</span>-->
                 <el-input
                     placeholder="密码"
                     name="pwd"
                     :type="isShowPwd ? 'text' : 'password'"
                     @keyup.enter.native="handleLogin"
                     v-model="ruleForm.pwd"
-                    autocomplete="on"
                 >
-                    <i slot="prefix" class="el-input__icon">
-                        <icon-svg icon-class="pwd"/>
-                    </i>
-                    <i slot="suffix" class="el-input__icon" @click="isShowPwd = !isShowPwd">
-                        <icon-svg icon-class="eye"/>
-                    </i>
+                    <i slot="prefix" class="el-input__icon el-icon-key"></i>
                 </el-input>
             </el-form-item>
             <div>
@@ -83,13 +72,13 @@ export default {
         };
         return {
             ruleForm: {
-                userName: "admin",
-                pwd: "admin",
+                userName: "",
+                pwd: "",
                 checked: true
             },
             rules: {
                 userName: [
-                    { required: true, message: "请输入登录名", trigger: "blur" }
+                    { required: true, message: "请输入账户名", trigger: "blur" }
                 ],
                 pwd: [{ validator: validatePwd, trigger: "blur" }]
             },
@@ -119,8 +108,6 @@ export default {
                             this.$router.push({
                                 path: path
                             });
-                            // window.location.replace(path);
-                            // this.showDialog = true
                         })
                         .catch(() => {
                             this.loading = false;
@@ -144,7 +131,6 @@ export default {
 
 <style type="text/scss" lang="scss">
 @import "../../styles/mixin";
-
 $bg: #2d3a4b;
 $dark_gray: #889aa4;
 $light_gray: #eee;
@@ -173,9 +159,12 @@ $light_gray: #eee;
     border: 0;
     -webkit-appearance: none;
     border-radius: 0;
-    padding: 2px 15px;
+    padding: 2px 15px 2px 30px;
     color: $light_gray;
     height: 100%;
+    &:focus {
+      padding: 2px 15px 2px 30px;
+    }
   }
   .el-input {
     display: inline-block;

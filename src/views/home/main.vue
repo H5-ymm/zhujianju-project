@@ -6,40 +6,53 @@
       </el-form-item>
       <el-form-item>
         <el-button-group>
-          <el-button type="primary" icon="search" @click="onSubmit">查询</el-button>
-          <el-button type="primary" @click.native="handleForm(null, null)">新增</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
+          <el-button type="primary" icon="el-icon-plus" @click.native="handleForm(null, null)">新增</el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-document-copy"
+            @click="printView"
+            v-print="'#printTest'"
+          >打印</el-button>
         </el-button-group>
       </el-form-item>
     </el-form>
     <el-table
       v-loading="loading"
       :data="list"
+      show-summary
+      id="printTest"
+      ref="print"
       style="width: 100%;"
       class="common-table"
       max-height="500px"
     >
       <el-table-column label="工程名称" prop="name" width="100px" align="center"></el-table-column>
-      <el-table-column label="项目类别" prop="type" width="100px" align="center"></el-table-column>
-      <el-table-column label="结构类型" width="100px" prop="structure_type" align="center"></el-table-column>
-      <el-table-column label="建筑规模" width="100px" prop="scale" align="center"></el-table-column>
-      <el-table-column label="层数" width="100px" prop="layers" align="center"></el-table-column>
-      <el-table-column label="工程造价" width="100px" prop="engineering_cost" align="center"></el-table-column>
-      <el-table-column label="二维码" width="100px" prop="engineering_cost" align="center">
+      <el-table-column label="二维码" width="100px" align="center">
         <template slot-scope="scope">
           <img :src="getImg(scope.row.qrcode)" v-if="scope.row.qrcode" class="qrcode" alt="">
           <span v-else class="qrcode-status">未生成</span>
         </template>
       </el-table-column>
-      <el-table-column label="计划开工日期" width="140px" align="center">
+      <el-table-column label="项目类别" prop="type" width="100px" align="center"></el-table-column>
+      <el-table-column label="结构类型" width="100px" prop="structure_type" align="center"></el-table-column>
+      <el-table-column label="建筑规模" width="100px" prop="scale" align="center"></el-table-column>
+      <el-table-column label="层数" width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{scope.row.starttime?$moment.unix(scope.row.starttime).format('YYYY-MM-DD HH:mm'):''}}</span>
+          <span>{{scope.row.layers}}层</span>
         </template>
       </el-table-column>
-      <el-table-column label="计划竣工日期" width="140px" align="center">
+      <el-table-column label="工程造价" width="100px" prop="engineering_cost" align="center"></el-table-column>
+      <el-table-column label="计划开工日期" width="110px" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.starttime?$moment.unix(scope.row.starttime).format('YYYY-MM-DD'):''}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="计划竣工日期" width="110px" align="center">
         <template slot-scope="scope">
           <span>
             {{scope.row.endtime?
-            $moment.unix(scope.row.endtime).format('YYYY-MM-DD HH:mm'):''}}
+            $moment.unix(scope.row.endtime).format('YYYY-MM-DD'):''}}
           </span>
         </template>
       </el-table-column>
@@ -48,7 +61,14 @@
           <span>{{scope.row.province}}{{scope.row.city}}{{scope.row.area}}{{scope.row.address}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
+      <el-table-column
+        label="操作"
+        class="no-print"
+        v-if="noPrint"
+        align="center"
+        min-width="120px"
+        fixed="right"
+      >
         <template slot-scope="scope">
           <el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>
           <el-button type="text" size="small" @click.native="viewDetail(scope.$index, scope.row)">查看</el-button>
@@ -82,7 +102,7 @@
       >
         <el-form-item label="用户名" prop="username">
           <el-input
-           :readonly="formMap[formName]=='编辑'"
+            :readonly="formMap[formName]=='编辑'"
             v-model="formData.username"
             placeholder="请输入用户名"
             class="width240"
@@ -167,7 +187,7 @@
             placeholder="选择日期"
           ></el-date-picker>
         </el-form-item>
-        <el-form-item label="计划竣工日期" prop="endtime">
+        <el-form-item label="计划竣工日期" class="date-item" prop="endtime">
           <el-date-picker
             v-model="formData.endtime"
             type="date"
@@ -177,11 +197,19 @@
             placeholder="选择日期"
           ></el-date-picker>
         </el-form-item>
-        <el-form-item label="建筑工程规划许可证" prop="license">
+        <el-form-item label="建筑工程规划许可证"  class="date-item"prop="license">
           <el-input
             class="width240"
             placeholder="请输入建筑工程规划许可证"
             v-model="formData.license"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="施工许可证" prop="make_license">
+          <el-input
+            class="width240"
+            placeholder="请输入施工许可证"
+            v-model="formData.make_license"
             auto-complete="off"
           ></el-input>
         </el-form-item>
@@ -193,19 +221,27 @@
             auto-complete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item label="监督组" prop="monitoring_group">
+        <el-form-item label="消防审查合格证号" prop="firecontrol_license">
           <el-input
             class="width240"
-            placeholder="请输入监督组负责人"
-            v-model="formData.monitoring_group"
+            placeholder="请输入消防审查合格证号"
+            v-model="formData.firecontrol_license"
             auto-complete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item label="建筑单位" prop="construction_unit">
+        <el-form-item label="监督备案登记号" prop="monitoring_id">
+          <el-input
+            class="width240"
+            placeholder="请输入监督备案登记号"
+            v-model="formData.monitoring_id"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="建设单位" prop="construction_unit">
           <div class="width240">
             <el-select
               v-model="formData.construction_unit"
-              placeholder="请选择建筑单位"
+              placeholder="请选择建设单位"
               filterable
               class="width240 select-input"
             >
@@ -220,7 +256,7 @@
               </el-option>
             </el-select>
             <el-input
-              placeholder="请输入建筑单位负责人"
+              placeholder="请输入建设单位负责人"
               v-model="formData.construction_user"
               auto-complete="off"
             ></el-input>
@@ -330,6 +366,14 @@
             <el-input placeholder="请输检测单位负责人" v-model="formData.detection_user" auto-complete="off"></el-input>
           </div>
         </el-form-item>
+        <el-form-item label="监督组" prop="monitoring_group">
+          <el-input
+            class="width240"
+            placeholder="请输入监督组负责人"
+            v-model="formData.monitoring_group"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click.native="hideForm">取消</el-button>
@@ -350,8 +394,7 @@ import {
 import { getCorporationCompany } from "../../api/company/index"
 import { geTypeAll } from "../../api/file/data"
 import selectCity from "../../components/selectCity.vue";
-
-import { getImg } from "../../utils/util.js";
+import { getImg, checkNum } from "../../utils/util.js";
 const formJson = {
   username: '',
   password: '',
@@ -388,12 +431,21 @@ export default {
     selectCity: selectCity
   },
   data() {
+    let validatereg = (rule, value, callback) => {
+      if (value === '') {
+        callback()
+      } else if (!checkNum(value)) {
+        callback(new Error('请输入数字'))
+      } else {
+        callback()
+      }
+    }
     return {
       roles: [],
       query: {
         keyword: '',
         page: 1,
-        limit: 20,
+        limit: 10,
       },
       list: [],
       total: 0,
@@ -426,13 +478,16 @@ export default {
           { required: true, message: "请选择结构类型", trigger: "change" }
         ],
         scale: [
-          { required: true, message: "请输入建筑规模", trigger: "blur" }
+          { required: true, message: "请输入建筑规模", trigger: "blur" },
+          { validator: validatereg, trigger: 'blur' }
         ],
         layers: [
-          { required: true, message: "请输入层数", trigger: "blur" }
+          { required: true, message: "请输入层数", trigger: "blur" },
+          { validator: validatereg, trigger: 'blur' }
         ],
         engineering_cost: [
-          { required: true, message: "请输入工程造价", trigger: "blur" }
+          { required: true, message: "请输入工程造价", trigger: "blur" },
+          { validator: validatereg, trigger: 'blur' }
         ],
         starttime: [
           { required: true, message: "请选择开工时间", trigger: "change" }
@@ -443,14 +498,23 @@ export default {
         license: [
           { required: true, message: "请输入许可证", trigger: "blur" }
         ],
+        make_license: [
+          { required: true, message: "请输入施工许可证", trigger: "blur" }
+        ],
         tzscpz: [
           { required: true, message: "请输入图纸审查批准号", trigger: "blur" }
+        ],
+        firecontrol_license: [
+          { required: true, message: "请输入消防审查合格证号", trigger: "blur" }
+        ],
+        monitoring_id: [
+          { required: true, message: "请输入监督备案号", trigger: "blur" }
         ],
         monitoring_group: [
           { required: true, message: "请输入监督组", trigger: "blur" }
         ],
         construction_unit: [
-          { required: true, message: "请选择建筑单位", trigger: "change" }
+          { required: true, message: "请选择建设单位", trigger: "change" }
         ],
         survey_unit: [
           { required: true, message: "请选择勘查单位", trigger: "change" }
@@ -468,7 +532,8 @@ export default {
           { required: true, message: "请选择检测单位", trigger: "change" }
         ],
       },
-      deleteLoading: false
+      deleteLoading: false,
+      noPrint: true
     };
   },
   methods: {
@@ -494,8 +559,14 @@ export default {
       return new Promise((resolve, reject) => {
         geTypeAll(params).then(res => {
           resolve(res)
+        }).catch(() => {
+          reject()
         })
       })
+    },
+    printView() {
+      this.noPrint = false
+      // this.Print(this.$refs.print)
     },
     viewDetail(index, row) {
       this.$router.push('projectDetail?id=' + row.id)
@@ -569,28 +640,28 @@ export default {
       this.formData = JSON.parse(JSON.stringify(formJson));
       if (row !== null) {
         this.getProjectDetail(row.id)
-        // this.formData = Object.assign({}, row);
-        // console.log(row)
-
-        // this.formData.
       }
       this.formName = "add";
       this.formRules = this.addRules;
       if (index !== null) {
         this.index = index;
         this.formName = "edit";
+        delete this.addRules.username
         this.formRules = this.addRules;
       }
     },
     getProjectDetail(id) {
       getDetail({ id }).then(res => {
         this.formData = res || {}
-        this.formData.design_user = Number(this.formData.design_user)
         this.formData.structure_type = Number(this.formData.structure_type)
+        let starttime = this.$moment.unix(this.formData.starttime).format('YYYY-MM-DD')
+        let endtime = this.$moment.unix(this.formData.endtime).format('YYYY-MM-DD')
+
+        this.formData.starttime = this.$moment(starttime).valueOf()
+        this.formData.endtime = this.$moment(endtime).valueOf()
         if (this.formData.provinceid) {
           this.address = [this.formData.provinceid, this.formData.cityid, this.formData.areaid]
         }
-        console.log(this.formData)
       })
     },
     editProject(data) {
@@ -612,8 +683,10 @@ export default {
             this.$message.warning('请选择工程地点')
           } else if (!this.formData.address) {
             this.$message.warning('请输入工程详细地址')
+          } else if (this.formData.starttime - this.formData.endtime > 0) {
+            this.$message.warning('开始时间不能大于竣工时间')
           } else if (!this.formData.construction_user) {
-            this.$message.warning('请输入建筑单位负责人')
+            this.$message.warning('请输入建设单位负责人')
           } else if (!this.formData.survey_user) {
             this.$message.warning('请输入勘查单位负责人')
           } else if (!this.formData.design_user) {
@@ -703,6 +776,15 @@ export default {
 <style lang="scss">
 .select-input {
   margin-bottom: 5px;
+}
+.date-item {
+  .el-input--prefix {
+    .el-input__inner {
+      :focus {
+        padding-left: 30px;
+      }
+    }
+  }
 }
 .lable-left {
   float: left;

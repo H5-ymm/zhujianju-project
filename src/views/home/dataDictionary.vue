@@ -17,8 +17,8 @@
             </el-form-item>
             <el-form-item>
               <el-button-group>
-                <el-button type="primary" icon="search" @click="searchData">查询</el-button>
-                <el-button type="primary" @click.native="add">新增</el-button>
+                <el-button type="primary" icon="el-icon-search" @click="searchData">查询</el-button>
+                <el-button type="primary" icon="el-icon-plus" @click.native="add">新增</el-button>
               </el-button-group>
             </el-form-item>
           </el-form>
@@ -104,10 +104,8 @@ export default {
   },
   created() {
     this.query.pid = 0
-    this.getList()
-  },
-  mounted() {
     this.fetchData()
+    this.getList()
   },
   methods: {
     fetchData(key) {
@@ -142,7 +140,6 @@ export default {
     },
     edit(data) {
       this.modalData = data
-      console.log(this.modalData)
       this.formVisible = true
     },
     editData() {
@@ -151,7 +148,6 @@ export default {
         name: this.modalData.name
       }
       editType(params).then(res => {
-        console.log(res)
         if (res) {
           this.fetchData(this.query.pid)
           this.$message.success('修改成功')
@@ -177,20 +173,7 @@ export default {
           }
         })
       }
-    },
-    remove(id) {
-      // axios.post(`/api/api-m/erpPersonalMailList/deleteByPrimaryKey?id=${id}`).then(res => {
-      //   this.$Message.success('删除成功')
-      //   this.fetchData()
-      // })
-    },
-    cancel() {
-      this.modalData = {}
-      this.modal = false
-    },
-    // handelPage(data) {
-    //   console.log(data)
-    // }
+    }
   }
 }
 </script>

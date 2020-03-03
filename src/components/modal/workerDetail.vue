@@ -16,7 +16,7 @@
 			ref="dataForm"
 			v-if="formData"
 		>
-			<el-form-item label="工人名称">
+			<el-form-item label="工人姓名">
 				<el-input v-model="formData.name" class="width240" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="工种">
@@ -29,32 +29,19 @@
 				<el-input class="width240" v-model="formData.link_tel" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="紧急联系人">
-				<el-input
-					class="width240"
-					v-model="formData.link_man"
-				readonly
-				></el-input>
+				<el-input class="width240" v-model="formData.link_man" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="联系方式">
-					<el-radio-group class="width240" v-model="formData.sex">
-						<el-radio :label="1" disabled>男</el-radio>
-						<el-radio :label="2" disabled>女</el-radio>
-					</el-radio-group>
+				<el-radio-group class="width240" v-model="formData.sex">
+					<el-radio :label="1" disabled>男</el-radio>
+					<el-radio :label="2" disabled>女</el-radio>
+				</el-radio-group>
 			</el-form-item>
 			<el-form-item label="地址">
-				<el-input
-					class="width240"
-					v-model="formData.address"
-			  	readonly
-				></el-input>
+				<el-input class="width240" v-model="formData.address" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="来源地">
-				<el-input
-					class="width240"
-					placeholder="请输入来源地"
-					v-model="formData.address"
-				readonly
-				></el-input>
+				<el-input class="width240" placeholder="请输入来源地" v-model="formData.address" readonly></el-input>
 			</el-form-item>
 		</el-form>
 	</el-dialog>

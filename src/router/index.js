@@ -19,15 +19,6 @@ import projectDetail from "../views/home/projectDetail.vue";
 // 管理组相关
 import adminRouter from "../views/userManage/admin/router.vue";
 import authAdmin from "../views/userManage/admin/authAdmin.vue";
-// import authRole from "../views/userManage/admin/authRole.vue";
-// import authPermissionRule from "../views/userManage/admin/authPermissionRule.vue";
-
-// const routerPush = VueRouter.prototype.push
-// VueRouter.prototype.push = function push(location) {
-//     console.log(location)
-//     return routerPush.call(this, location).catch(error => error)
-// }
-// Vue.use(VueRouter);
 
 const err401 = r =>
     require.ensure([], () => r(require("../views/error/err401.vue")), "home");
@@ -104,7 +95,7 @@ export const manageRouter = [{
         component: Home,
         redirect: "/readme/main",
         icon: "qiyeguanli",
-        name: "企业管理",
+        name: "企业工程分类",
         noDropdown: true,
         children: [{
             path: 'companyManange',
@@ -128,7 +119,7 @@ export const manageRouter = [{
         component: Home,
         redirect: "/readme/main",
         icon: "xiangmu1",
-        name: "在建项目",
+        name: "用工统计",
         noDropdown: true,
         children: [{
             path: 'project',

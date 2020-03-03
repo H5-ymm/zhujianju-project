@@ -13,9 +13,6 @@ import {
     manageRouter,
     asyncRouterMap
 } from "./router/index";
-import {
-    getIsWxClient
-} from "./utils/util"
 // permissiom judge
 function hasRole(authRules, permissionAuthRules) {
     if (!authRules || authRules.length <= 0) {
@@ -45,7 +42,6 @@ function hasRouterRole(authRules, route) {
 }
 
 function hasRouterStaff(authRules, route) {
-    console.log(authRules, route)
     if (
         authRules.indexOf("staff") >= 0 ||
         !route.meta ||
@@ -76,10 +72,7 @@ function filterAsyncRouter(asyncRouterMap, authRules) {
 }
 
 function filterAsyncRouter1(workerRouter, authRules) {
-    console.log(workerRouter)
     const accessedRouters = workerRouter.filter(route => {
-        console.log(route)
-        console.log(authRules)
         if (hasRouterStaff(authRules, route)) {
             if (route.children && route.children.length) {
                 route.children = filterAsyncRouter1(route.children, authRules);
@@ -88,7 +81,6 @@ function filterAsyncRouter1(workerRouter, authRules) {
         }
         return false;
     });
-    console.log(accessedRouters)
     return accessedRouters;
 }
 // register global progress.
@@ -101,7 +93,6 @@ router.beforeEach((to, from, next) => {
         return;
     }
     let adminId = getAdminId()
-    console.log(adminId + 'kkkkk')
     if (adminId !== "undefined" && adminId !== "" && adminId) {
         // 判断是否有token
         if (to.path === "/login") {
@@ -120,22 +111,29 @@ router.beforeEach((to, from, next) => {
                 .dispatch("userInfo")
                 .then(data => {
                     let accessedRouters = []
-                    if (data.is_wmadmin == 0) {
-                        let route = [...manageRouter, ...asyncRouterMap]
-                        accessedRouters = filterAsyncRouter(
-                            route,
-                            data.authRules
-                        );
-
-                    } else {
-                        let authRules = ["staffManage/staff.admin/staff"]
-                        accessedRouters = workerRouter
+                    if (data) {
+                        if (data.is_wmadmin == 0 || sessionStorage.getItem('is_wmadmin') == 0) {
+                            let route = [...manageRouter, ...asyncRouterMap]
+                            accessedRouters = filterAsyncRouter(
+                                route,
+                                data.authRules
+                            );
+                        }
+                        if (data.is_wmadmin == 1 || sessionStorage.getItem('is_wmadmin') == 1) {
+                            accessedRouters = workerRouter
+                        }
+                        if (sessionStorage.getItem('is_wmadmin') == 'undefined' || !data.id) {
+                            Message.error("验证失败,请重新登录");
+                            next({
+                                path: "/login"
+                            });
+                            return
+                        }
                     }
                     sessionStorage.setItem('accessedRouters', JSON.stringify(accessedRouters))
-                    console.log(accessedRouters)
                     // 生成可访问的路由表
                     if (!accessedRouters.length) {
-                        accessedRouters = JSON.parse(accessedRouterssessionStorage.getItem('accessedRouters'))
+                        accessedRouters = JSON.parse(sessionStorage.getItem('accessedRouters'))
                     }
                     router.addRoutes(accessedRouters); // 动态添加可访问路由表
                     next({
@@ -151,10 +149,10 @@ router.beforeEach((to, from, next) => {
                 .catch(() => {
                     store.dispatch("fedLogout").then(() => {
                         Message.error("验证失败,请重新登录");
-                        let redirect = to.fullPath;
+                        // let redirect = to.fullPath;
                         store.dispatch("loginOut").then(() => {
                             next({
-                                path: "/login",
+                                path: "/login"
                                 // query: {
                                 //     redirect: redirect
                                 // }
@@ -178,9 +176,9 @@ router.beforeEach((to, from, next) => {
         NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
         return;
     }
-    let redirect = to.fullPath;
+    // let redirect = to.fullPath;
     store.dispatch("loginOut").then(() => {
-        sessionStorage.clear()
+        sessionStorage.removeItem('is_wmadmin')
         next({
             path: "/login",
             // query: {

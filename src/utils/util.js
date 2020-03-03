@@ -43,3 +43,13 @@ export const getQueryString = name => {
 export const getImg = img => {
     return 'http://www.tp1.cn/zhujianj/' + img
 }
+
+export const locationUrl = state => {
+    let urlHome = encodeURIComponent('http://www.tp1.cn/dist/#/workerView')
+    return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbe1948a3f8612f0d&redirect_uri=${urlHome}&response_type=code&scope=snsapi_userinfo&state=${state}&connect_redirect=1#wechat_redirect`
+}
+
+export const checkNum = num => {
+    let reg = /^([0]|[1-9][0-9]*)$/
+    return reg.test(num)
+}

@@ -6,8 +6,8 @@
 			</el-form-item>
 			<el-form-item>
 				<el-button-group>
-					<el-button type="primary" icon="search" @click="onSubmit">查询</el-button>
-					<el-button type="primary" @click.native="handleForm(null, null)">新增</el-button>
+					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
+					<el-button type="primary" icon="el-icon-plus" @click.native="handleForm(null, null)">新增</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
@@ -19,9 +19,8 @@
 			max-height="500px"
 		>
 			<el-table-column label="公司名称" align="center" prop="com_name"></el-table-column>
-			<el-table-column label="公司类型" prop="com_type" align="center">
-			</el-table-column>
-			<el-table-column label="法人联系人" width="100px"  prop="corporation_name" align="center" ></el-table-column>
+			<el-table-column label="公司类型" prop="com_type" align="center"></el-table-column>
+			<el-table-column label="法人联系人" width="100px" prop="corporation_name" align="center"></el-table-column>
 			<el-table-column label="法人联系电话" align="center" width="110px" prop="corporation_tel"></el-table-column>
 			<el-table-column label="法人身份证" align="center" min-width="110px" prop="corporation_idcard"></el-table-column>
 			<el-table-column label="营业执照号" align="center" min-width="100px" prop="permit_id"></el-table-column>
@@ -67,8 +66,12 @@
 				</el-form-item>
 				<el-form-item label="公司类型" prop="com_type">
 					<el-select class="width240" v-model="formData.com_type" value-key="name" placeholder="请选择">
-						<el-option v-for="(item, index) in options"
-						:key="item.name" :label="item.name" :value="item.id"></el-option>
+						<el-option
+							v-for="(item, index) in options"
+							:key="item.name"
+							:label="item.name"
+							:value="item.id"
+						></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="营业执照号" prop="permit_id">
@@ -169,7 +172,6 @@ export default {
 		return {
 			formDetailVisible: false,
 			companyId: '',
-			roles: [],
 			query: {
 				keyword: "",
 				page: 1,
@@ -177,13 +179,7 @@ export default {
 			},
 			list: [],
 			total: 0,
-			options: [{
-				value: '1',
-				label: '建设单位'
-			}, {
-				value: '2',
-				label: '勘察单位'
-			}],
+			options: [],
 			loading: true,
 			index: null,
 			formName: null,
@@ -231,9 +227,7 @@ export default {
 	},
 	methods: {
 		viewDetail(row) {
-			console.log(row)
 			this.companyId = row.id
-			console.log(this.companyId)
 			this.formDetailVisible = true
 		},
 		onReset() {
@@ -273,15 +267,6 @@ export default {
 					this.roles = [];
 				});
 		},
-		getRoleList() {
-			authAdminRoleList(this.query)
-				.then(response => {
-					this.roles = response.data.list || [];
-				})
-				.catch(() => {
-					this.roles = [];
-				});
-		},
 		// 刷新表单
 		resetForm() {
 			if (this.$refs["dataForm"]) {
@@ -299,7 +284,6 @@ export default {
 			this.$refs["dataForm"].resetFields();
 			return true;
 		},
-
 		// 显示表单
 		handleForm(index, row) {
 			this.formVisible = true;
@@ -389,6 +373,8 @@ export default {
 			return new Promise((resolve, reject) => {
 				geTypeAll(params).then(res => {
 					resolve(res)
+				}).catch(() => {
+					reject()
 				})
 			})
 		},
@@ -405,7 +391,6 @@ export default {
 		this.getType(4).then(res => {
 			this.options = res
 		})
-		// this.getRoleList();
 	}
 };
 </script>
