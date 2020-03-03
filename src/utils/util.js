@@ -41,5 +41,5 @@ export const getQueryString = name => {
 }
 
 export const getImg = img => {
-    return 'http://www.tp1.cn/zhujianj' + img
+    return 'http://www.tp1.cn/zhujianj/' + img
 }

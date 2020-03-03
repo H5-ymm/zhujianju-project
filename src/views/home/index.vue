@@ -125,7 +125,7 @@
 import { mapGetters } from "vuex";
 import SidebarItem from "./SidebarItem.vue";
 import { password } from "../../api/auth/login";
-import { getAdminId } from "../../utils/auth";
+import { getAdminId, getToken } from "../../utils/auth";
 export default {
     data() {
         let validatePass = (rule, value, callback) => {
@@ -270,7 +270,7 @@ export default {
                                 this.$refs["passwordFormData"].resetFields();
                                 this.passwordFormVisible = false;
                                 this.$store.dispatch("loginOut").then(() => {
-                                    location.reload(); // 为了重新实例化vue-router对象 避免bug
+                                    
                                 });
                             }
                         })

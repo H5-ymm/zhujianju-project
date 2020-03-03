@@ -7,8 +7,9 @@
 			<el-form-item class="query-form-item" v-if="is_wmadmin">
 				<el-select v-model="query.status" class="width200" placeholder="状态">
 					<el-option label="全部" value=""></el-option>
-					<el-option label="通过" value="1"></el-option>
-					<el-option label="拒绝" value="2"></el-option>
+					<el-option label="待审核" value="0"></el-option>
+					<el-option label="已通过" value="1"></el-option>
+					<el-option label="已拒绝" value="2"></el-option>
 				</el-select>
 			</el-form-item>
 			<el-form-item class="query-form-item">
@@ -18,6 +19,7 @@
 				<el-button-group>
 					<el-button type="primary" icon="search" @click="onSubmit">查询</el-button>
 					<el-button type="primary" @click.native="handleForm(null, null)">新增</el-button>
+						<el-button type="primary" v-if="is_wmadmin" @click.native="viewQrcode">查看二维码</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
@@ -42,6 +44,13 @@
 					<span>{{scope.row.sex===1?'男':'女'}}</span>
 				</template>
 			</el-table-column>
+			<el-table-column label="状态"  align="center">
+        <template slot-scope="scope">
+          <el-tag
+            :type="scope.row.status==0?'warning':scope.row.status==1?'success':'danger'"
+          >{{scope.row.status==0?'待审核':scope.row.status==1?'已通过':'已拒绝'}}</el-tag>
+        </template>
+      </el-table-column>
 			<el-table-column label="操作" v-if="is_wmadmin" align="center" min-width="120px" fixed="right">
 				<template slot-scope="scope">
 					<el-button type="text" size="small" @click.native="switchCheck(scope.row)">审核</el-button>
@@ -53,7 +62,7 @@
 		</el-table>
 		<el-pagination :page-size="query.limit" @current-change="handleCurrentChange" layout="prev, pager, next,total" :total="total"></el-pagination>
 		<!--表单-->
-		<el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+		<el-dialog title="提示" :visible.sync="dialogVisible" width="36%" :before-close="handleClose">
 			<el-radio-group v-model="status">
 				<el-radio :label="1">通过</el-radio>
 				<el-radio :label="2">拒绝</el-radio>
@@ -118,12 +127,13 @@ import {
 	getWorkmanDetail,
 	saveStatus,
 	getworkmanbytel,
-	bindWorkman
+	bindWorkman,
+	getqrcode
 } from "../../api/workman/index";
 import WorkerDetail from "../../components/modal/workerDetail.vue";
 import selectCity from "../../components/selectCity.vue";
 import { geTypeAll } from "../../api/file/data"
-import { validateIdCard, checkMobile } from "../../utils/util.js";
+import { validateIdCard, checkMobile, getImg } from "../../utils/util.js";
 // import { mapGetters } from "vuex"
 const formJson = {
 	id: "",
@@ -217,7 +227,7 @@ export default {
 	},
 	computed: {
 		is_wmadmin () {
-			return this.$store.state.is_wmadmin
+			return this.$store.state.admin.is_wmadmin
 		}
 	},
 	created () {
@@ -226,12 +236,26 @@ export default {
 		this.query = Object.assign(this.query, query);
 		this.query.limit = parseInt(this.query.limit);
 		// 加载表格数据
+		console.log(this.$store)
+		console.log(this.is_wmadmin)
 		this.getList();
 		this.getType(3).then(res => {
 			this.options = res
 		})
 	},
 	methods: {
+		viewQrcode(){
+			getqrcode().then(res => {
+			  if (res) {
+					console.log(res)
+					let url = getImg(res)
+					console.log(url)
+					this.$alert(`<img src=${url} />`, '二维码', {
+						dangerouslyUseHTMLString: true
+					});
+				}
+			})
+		},
 		districtChange (val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]

@@ -28,7 +28,7 @@ const state = {
     token: getToken(), // 登录token
     authRules: [], // 权限列表
     routers: constantRouterMap, // 路由列表
-    is_wmadmin: ''
+    is_wmadmin: sessionStorage.getItem('is_wmadmin')
 };
 
 // getters
@@ -39,7 +39,7 @@ const getters = {
     token: state => state.token,
     authRules: state => state.authRules,
     routers: state => state.routers,
-    is_wmadmin: state => state.is_wmadmin
+    is_wmadmin: state => state.is_wmadmin ?state.is_wmadmin : sessionStorage.getItem('is_wmadmin')
 };
 
 // actions
@@ -54,7 +54,6 @@ const actions = {
             loginName(userName, pwd)
                 .then(response => {
                     if (!response && response.id) {
-                        console.log(response)
                         Message({
                             message: response.message,
                             type: "error",
@@ -64,6 +63,8 @@ const actions = {
                         commit(types.RECEIVE_ADMIN_ID, response.id);
                         commit(types.RECEIVE_ADMIN_TOKEN, response.token);
                         commit(types.RECEIVE_ADMIN_AUTH_RULES, []);
+                        localStorage.setItem('zhujianj-token',response.id)
+                        localStorage.setItem('zhujianj-adminId', response.token)
                     }
                     resolve(response);
                 })
@@ -86,6 +87,7 @@ const actions = {
                     commit(types.RECEIVE_ADMIN_AUTH_RULES, response.authRules);
                     commit(types.RECEIVE_ADMIN, response.is_wmadmin);
                     resolve(response);
+                    sessionStorage.setItem('is_wmadmin', response.is_wmadmin)
                 })
                 .catch(error => {
                     console.log(error)
@@ -99,11 +101,15 @@ const actions = {
     }) {
         return new Promise((resolve, reject) => {
             logout()
-                .then(() => {
-                    commit(types.RECEIVE_ADMIN_ID, "");
-                    commit(types.RECEIVE_ADMIN_TOKEN, "");
-                    commit(types.RECEIVE_ADMIN_AUTH_RULES, []);
-                    commit(types.RECEIVE_ADMIN, '');
+                .then((res) => {
+                    console.log(res)
+                    if (res) {
+                        commit(types.RECEIVE_ADMIN_ID, "");
+                        commit(types.RECEIVE_ADMIN_TOKEN, "");
+                        commit(types.RECEIVE_ADMIN_AUTH_RULES, []);
+                        commit(types.RECEIVE_ADMIN, '');
+                        localStorage.clear()
+                    }
                     resolve();
                 })
                 .catch(error => {

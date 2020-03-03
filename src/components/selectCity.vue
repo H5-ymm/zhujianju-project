@@ -42,17 +42,15 @@ export default {
 		}
 	},
 	watch: {
-		address: {
-			handler(val, oldVal) {
-				if (val.length) {
-					this.getRegion(val)
-					this.districtList = this.address
-				} else {
-					this.getRegion([])
-					this.districtList = []
-				}
-			},
-			deep: true // 可以深度检测到 person 对象的属性值的变化
+		address(val) {
+			console.log(val)
+			if (val.length) {
+				this.getRegion(val)
+				this.districtList = this.address
+			} else {
+				this.getRegion([])
+				this.districtList = []
+			}
 		}
 	},
 	methods: {

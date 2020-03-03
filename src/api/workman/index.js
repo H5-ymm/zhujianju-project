@@ -44,4 +44,9 @@ export function binditem (query) {
 export function addWork (query) {
     return post("/wx/add", query)
 }
-
+export function getqrcode () {
+    return post("/workman/getqrcod_byadminid", {})
+}
+export function getitemname (query) {
+    return post("/wx/getitemname", query)
+}

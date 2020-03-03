@@ -173,7 +173,7 @@ $light_gray: #eee;
     border: 0;
     -webkit-appearance: none;
     border-radius: 0;
-    padding: 0.46rem 0.0666rem 0.16rem 0.2rem;
+    padding: 2px 15px;
     color: $light_gray;
     height: 100%;
   }

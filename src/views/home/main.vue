@@ -82,13 +82,14 @@
       >
         <el-form-item label="用户名" prop="username">
           <el-input
+           :readonly="formMap[formName]=='编辑'"
             v-model="formData.username"
             placeholder="请输入用户名"
             class="width240"
             auto-complete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item label="密码">
+        <el-form-item label="密码" v-if="formMap[formName]=='新增'">
           <el-input
             v-model="formData.password"
             placeholder="请输入密码"

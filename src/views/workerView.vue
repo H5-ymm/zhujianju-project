@@ -1,8 +1,23 @@
 <template>
 	<div class="worker-view">
-		<el-form :model="formData" :inline="true" label-width="120px" label-position="right" class="form" :rules="formRules" ref="dataForm">
+		<p class="projectName">项目名称：{{projectName}}</p>
+		<el-form
+			:model="formData"
+			:inline="true"
+			label-width="120px"
+			label-position="right"
+			class="form"
+			:rules="formRules"
+			ref="dataForm"
+		>
 			<el-form-item label="联系方式" prop="tel">
-				<el-input class="width220" @change="changeInput" placeholder="请输入联系方式" v-model="formData.tel" auto-complete="off"></el-input>
+				<el-input
+					class="width220"
+					@change="changeInput"
+					placeholder="请输入联系方式"
+					v-model="formData.tel"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
 			<el-form-item label="工人名称" prop="name">
 				<el-input v-model="formData.name" placeholder="请输入工人名称" class="width220" auto-complete="off"></el-input>
@@ -22,20 +37,43 @@
 				</el-radio-group>
 			</el-form-item>
 			<el-form-item label="紧急联系人" prop="link_man">
-				<el-input class="width220" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
+				<el-input
+					class="width220"
+					placeholder="请输入紧急联系人"
+					v-model="formData.link_man"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
-			<el-form-item label="地址" required>
-				<div class="width220 select-input">
-					<selectCity @change="districtChange" :address="[]"></selectCity>
+			<el-form-item label="地址">
+				<div class="width220 select-input" v-if="!readonly">
+					<selectCity @change="districtChange"></selectCity>
+				</div>
+				<div class="width220 select-input" v-else>
+					<p class="input-text">{{formData.province}}{{formData.city}}{{formData.area}}</p>
 				</div>
 			</el-form-item>
 			<el-form-item label="来源地">
 				<el-input class="width220" placeholder="请输入来源地" v-model="formData.address" auto-complete="off"></el-input>
 			</el-form-item>
-			<el-button type="primary" class="submit-btn" @click.native="formSubmit()">{{openid?'签到':'提交'}}</el-button>
+			<div v-if="!addSuccess">
+				<el-button type="primary" v-if="!bindProject" class="submit-btn" @click.native="formSubmit()">提交</el-button>
+				<el-button type="primary" v-else class="submit-btn" @click.native="addTemp">添加体温</el-button>
+			</div>
 		</el-form>
-		<el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
-			<el-input v-model="temperature" placeholder="请输入体温" class="width220 input-tiwen" auto-complete="off"></el-input>
+		<el-dialog
+			title="提示"
+			:visible.sync="dialogVisible"
+			width="28%"
+			center
+			:before-close="handleClose"
+		>
+			<el-input
+				v-model="temperature"
+				@change="changTemperature"
+				placeholder="请输入体温"
+				class="width220 input-tiwen"
+				auto-complete="off"
+			></el-input>
 			<span slot="footer" class="dialog-footer">
 				<el-button @click="dialogVisible = false">取 消</el-button>
 				<el-button type="primary" @click="handleOk">确 定</el-button>
@@ -45,15 +83,15 @@
 </template>
 <script>
 import {
-	getworkmanbytel,
 	bindWorkman,
 	addtemperature,
 	todaytemperature,
 	addWork,
-	binditem
+	binditem,
+	getitemname
 } from "../api/workman/index";
 import {
-	bindopenid
+	getWxworkmanbytel
 } from "../api/wx/wxApi";
 import { geTypeAll } from "../api/file/data"
 import selectCity from "../components/selectCity.vue";
@@ -93,13 +131,13 @@ export default {
 				name: "",
 				id_card: "",
 				tel: '',
-				job_type: 1,
+				job_type: '',
 				link_man: '',
 				link_tel: '',
 				address: '',
-				provinceid: 100000,
-				cityid: 110000,
-				areaid: 110010,
+				provinceid: '',
+				cityid: '',
+				areaid: '',
 				team_id: '',
 				openid: ''
 			},
@@ -123,45 +161,89 @@ export default {
 			},
 			options: [],
 			readonly: false,
-			team_id: 1,
+			item_id: '',
 			id: '',
-			openid: ''
+			openid: '',
+			bindProject: false,
+			addSuccess: false,
+			projectName: ''
 		}
 	},
 	created() {
-		this.team_id = getQueryString('team_id')
-		this.openid = getQueryString('openid');
+		let state = getQueryString('state')
+		if (state) {
+			this.item_id = state.split('#')[0]
+		}
+		this.openid = sessionStorage.getItem('zhujianjuOpenid')
 		this.formData.openid = sessionStorage.getItem('zhujianjuOpenid')
+		this.getName()
 		this.getType(3).then(res => {
 			this.options = res
 		})
 	},
 	methods: {
-		handleClose() {
-
+		getName() {
+			getitemname({ item_id: this.item_id }).then(res => {
+				this.projectName = res
+			})
 		},
-		handleOk() {
-
+		handleClose() {
+			this.dialogVisible = false
 		},
 		changeInput(e) {
-			// getworkmanbytel({ tel: e }).then(res => {
-			// 	if (res) {
-			// 		this.id = res.id
-			// 		this.formData = res
-			// 		this.readonly = true
-			// 	} else {
-			// 		this.readonly = false
-			// 	}
-			// })
-		},
-		getTodaytemperature(id) {
-			getworkmanbytel({ id }).then(res => {
+			let params = {
+				tel: e,
+				item_id: this.item_id
+			}
+			getWxworkmanbytel(params).then(res => {
 				if (res) {
-					this.temperature = res
+					this.id = res.id
+					if (res.is_link) {
+						this.bindProject = true
+					} else {
+						this.bindProject = false
+					}
+					this.formData = res
+					this.readonly = true
 				} else {
-					this.temperature = ''
+					this.readonly = false
 				}
 			})
+		},
+		getTodaytemperature(id, temperature) {
+			todaytemperature({ id }).then(res => {
+				if (res) {
+					this.dialogVisible = false
+					this.temperature = res
+				} else {
+					this.temperature = temperature || ''
+				}
+				this.addtempera(this.temperature)
+			})
+		},
+		addTemp() {
+			this.dialogVisible = true
+			this.getTodaytemperature(this.formData.id)
+		},
+		handleOk() {
+			let params = {
+				temperature: this.temperature,
+				id: this.formData.id
+			}
+			this.getTodaytemperature(this.formData.id)
+			addtemperature(params).then(res => {
+				if (res) {
+					this.addSuccess = true
+					this.$message.success("添加成功");
+					this.dialogVisible = false
+				} else {
+					this.addSuccess = false
+					this.$message.error("添加失败");
+				}
+			})
+		},
+		changTemperature(e) {
+			this.getTodaytemperature(this.formData.id, e)
 		},
 		districtChange(val) {
 			this.formData.provinceid = val[0]
@@ -218,9 +300,7 @@ export default {
 		addWorkBind(params) {
 			addWork(params).then(response => {
 				if (response) {
-					this.setBindopenid()
-					this.dialogVisible = true
-					this.getTodaytemperature()
+					console.log(response)
 					this.$message.success("操作成功");
 				} else {
 					this.$message.error("操作失败");
@@ -231,10 +311,10 @@ export default {
 		formSubmit() {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
-					if (this.readonly) {
+					if (this.readonly && !this.bindProject) {
 						this.bindWorkProject()
 					} else {
-						this.formData.team_id = this.team_id || 1
+						this.formData.item_id = this.item_id
 						this.addWorkBind(this.formData)
 					}
 				}
@@ -245,13 +325,22 @@ export default {
 </script>
 <style lang="scss">
 .worker-view {
-  margin: 20px auto;
+  margin: 20px auto 10px;
+  padding-bottom: 30px;
   width: 100%;
+  overflow: auto;
+  height: 100%;
+  .projectName {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-left: 20px;
+  }
   .width220 {
     width: 220px !important;
   }
   .submit-btn {
-    margin: 20px 25%;
+    margin: 20px 25% 0;
     width: 50%;
   }
 }

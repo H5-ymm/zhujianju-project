@@ -16,12 +16,8 @@ export function loginName (userName, pwd) {
     }
     return post('/login/index', data)
 }
-export function logout (uid, token) {
-    let data = {
-        uid,
-        token
-    }
-    return post('/login/out', data)
+export function logout () {
+    return post('/login/out', {})
 }
 export function password (data) {
     return post('/login/password', data)

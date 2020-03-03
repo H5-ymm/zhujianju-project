@@ -11,33 +11,60 @@ import "./role"; // 权限
 import "./mock"; // 模拟数据
 import moment from 'moment'
 import {
-    getopenid
+    getopenid,
+    getCode,
+    bindopenid
 } from "./api/wx/wxApi";
-import { getIsWxClient, getQueryString } from "./utils/util"
+import {
+    getIsWxClient,
+    getQueryString
+} from "./utils/util"
 // 引入axios
-
 import "./assets/icons/iconfont";
 import "./assets/icons/iconfont.css";
 import IconSvg from "./components/common/IconSvg.vue"; // svg组件
 Vue.prototype.$moment = moment
 // 注册全局组件（register global）
 Vue.component("icon-svg", IconSvg);
-console.log(getIsWxClient())
+let state = getQueryString('state')
+let openid = getQueryString('openid') || sessionStorage.getItem('zhujianjuOpenid') ;
+console.log(getQueryString('connect_redirect'))
+if (getQueryString('connect_redirect') && getIsWxClient() ) {
+   this.$router.go(-1)
+  }
+ let locationUrl = encodeURIComponent('http://www.tp1.cn/dist/#/workerView')
+  let url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbe1948a3f8612f0d&redirect_uri=${locationUrl}&response_type=code&scope=snsapi_userinfo&state=${state}&connect_redirect=1#wechat_redirect`
+    let zhujianjuOpenid = sessionStorage.getItem('zhujianjuOpenid2')
+    if (!zhujianjuOpenid && getIsWxClient() && !openid) {
+        sessionStorage.setItem('zhujianjuOpenid2', true)
+        location.href = url
+  }
 
-let team_id = getQueryString('team_id')
-let openid = getQueryString('openid');
-console.log(openid)
-if (getIsWxClient()) {
-    if (openid == null) {
-        getopenid({ team_id }).then(res => {
-            sessionStorage.setItem('zhujianjuOpenid', res)
+if (getQueryString('code') && getIsWxClient() ) {
+    sessionStorage.setItem('zhujianjuCode', getQueryString('code'))
+  }
+  window.onload = function () {
+    if (getIsWxClient()
+     &&sessionStorage.getItem('zhujianjuCode')&& !openid) {
+        getopenid({
+            code:sessionStorage.getItem('zhujianjuCode')
+        }).then(res => {
+            if(res.openid) {
+                // if (!res.is_link) {
+                //     let item_id = state.split('#')[0]
+                //     let params = {
+                //         id: item_id,
+                //         openid: res.openid
+                //     }
+                //     bindopenid(params).then(res=>{
+                //         console.log(res)
+                //     })
+                // }
+                sessionStorage.setItem('zhujianjuOpenid', res.openid)
+            }  
             console.log(res)
         })
-    } else {
-        sessionStorage.setItem('zhujianjuOpenid', openid)
     }
-}
-
 // 注册全局实用程序过滤器（register global utility filters）.
 Object.keys(filters).forEach(key => {
     Vue.filter(key, filters[key]);
@@ -49,3 +76,4 @@ new Vue({
     store,
     render: h => h(App)
 }).$mount("#app");
+  }

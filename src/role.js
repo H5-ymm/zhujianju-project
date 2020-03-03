@@ -13,8 +13,11 @@ import {
     manageRouter,
     asyncRouterMap
 } from "./router/index";
+import {
+    getIsWxClient
+} from "./utils/util"
 // permissiom judge
-function hasRole (authRules, permissionAuthRules) {
+function hasRole(authRules, permissionAuthRules) {
     if (!authRules || authRules.length <= 0) {
         return false;
     }
@@ -28,7 +31,7 @@ function hasRole (authRules, permissionAuthRules) {
  * @param authRules
  * @param route
  */
-function hasRouterRole (authRules, route) {
+function hasRouterRole(authRules, route) {
     if (
         authRules.indexOf("admin") >= 0 ||
         !route.meta ||
@@ -41,12 +44,25 @@ function hasRouterRole (authRules, route) {
     );
 }
 
+function hasRouterStaff(authRules, route) {
+    console.log(authRules, route)
+    if (
+        authRules.indexOf("staff") >= 0 ||
+        !route.meta ||
+        !route.meta.authRule
+    ) {
+        return true;
+    }
+    return authRules.some(
+        authRule => route.meta.authRule.indexOf(authRule) >= 0
+    );
+}
 /**
  * 递归过滤异步路由表，返回符合用户角色权限的路由表
  * @param asyncRouterMap
  * @param authRules
  */
-function filterAsyncRouter (asyncRouterMap, authRules) {
+function filterAsyncRouter(asyncRouterMap, authRules) {
     const accessedRouters = asyncRouterMap.filter(route => {
         if (hasRouterRole(authRules, route)) {
             if (route.children && route.children.length) {
@@ -59,8 +75,24 @@ function filterAsyncRouter (asyncRouterMap, authRules) {
     return accessedRouters;
 }
 
+function filterAsyncRouter1(workerRouter, authRules) {
+    console.log(workerRouter)
+    const accessedRouters = workerRouter.filter(route => {
+        console.log(route)
+        console.log(authRules)
+        if (hasRouterStaff(authRules, route)) {
+            if (route.children && route.children.length) {
+                route.children = filterAsyncRouter1(route.children, authRules);
+            }
+            return true;
+        }
+        return false;
+    });
+    console.log(accessedRouters)
+    return accessedRouters;
+}
 // register global progress.
-const whiteList = ["/login", "/401", "/404", "/500", '/workerView', '/signed']; // 不重定向白名单
+const whiteList = ["/login", "/401", "/404", "/500", '/workerView']; // 不重定向白名单
 router.beforeEach((to, from, next) => {
     NProgress.start(); // 开启Progress
     if (whiteList.indexOf(to.path) !== -1) {
@@ -68,7 +100,8 @@ router.beforeEach((to, from, next) => {
         next();
         return;
     }
-    let adminId = getAdminId();
+    let adminId = getAdminId()
+    console.log(adminId + 'kkkkk')
     if (adminId !== "undefined" && adminId !== "" && adminId) {
         // 判断是否有token
         if (to.path === "/login") {
@@ -86,7 +119,6 @@ router.beforeEach((to, from, next) => {
             store
                 .dispatch("userInfo")
                 .then(data => {
-                    console.log(data.is_wmadmin == 0)
                     let accessedRouters = []
                     if (data.is_wmadmin == 0) {
                         let route = [...manageRouter, ...asyncRouterMap]
@@ -94,35 +126,38 @@ router.beforeEach((to, from, next) => {
                             route,
                             data.authRules
                         );
-                        console.log(accessedRouters)
+
                     } else {
-                        accessedRouters = filterAsyncRouter(
-                            workerRouter
-                        );
+                        let authRules = ["staffManage/staff.admin/staff"]
+                        accessedRouters = workerRouter
                     }
+                    sessionStorage.setItem('accessedRouters', JSON.stringify(accessedRouters))
+                    console.log(accessedRouters)
                     // 生成可访问的路由表
+                    if (!accessedRouters.length) {
+                        accessedRouters = JSON.parse(accessedRouterssessionStorage.getItem('accessedRouters'))
+                    }
                     router.addRoutes(accessedRouters); // 动态添加可访问路由表
                     next({
                         ...to
-                    }); // hack方法 确保addRoutes已完成
+                    });
+                    // hack方法 确保addRoutes已完成
                     // 设置左边导航栏
-                    store
-                        .dispatch("filterRouter", {
+                    store.dispatch("filterRouter", {
                             accessedRouters
                         })
-                        .then(() => { });
+                        .then(() => {});
                 })
                 .catch(() => {
-                    console.log(1)
                     store.dispatch("fedLogout").then(() => {
                         Message.error("验证失败,请重新登录");
                         let redirect = to.fullPath;
                         store.dispatch("loginOut").then(() => {
                             next({
                                 path: "/login",
-                                query: {
-                                    redirect: redirect
-                                }
+                                // query: {
+                                //     redirect: redirect
+                                // }
                             });
                         });
                     });
@@ -130,7 +165,7 @@ router.beforeEach((to, from, next) => {
             return;
         }
         // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
-        if (hasRole(store.getters.authRules, to.meta.authRule)) {
+        if (hasRole(store.getters.authRules, to.meta.authRule) || store.getters.is_wmadmin) {
             next(); //
             return;
         }
@@ -145,11 +180,12 @@ router.beforeEach((to, from, next) => {
     }
     let redirect = to.fullPath;
     store.dispatch("loginOut").then(() => {
+        sessionStorage.clear()
         next({
             path: "/login",
-            query: {
-                redirect: redirect
-            }
+            // query: {
+            //     redirect: redirect
+            // }
         });
     }); // 否则全部重定向到登录页
     NProgress.done();
