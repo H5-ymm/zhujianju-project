@@ -53,3 +53,10 @@ export const checkNum = num => {
     let reg = /^([0]|[1-9][0-9]*)$/
     return reg.test(num)
 }
+export const IsPC = () => {
+    let flag = true;
+    if (/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) { //移动端
+        flag = false;
+    }
+    return flag
+}

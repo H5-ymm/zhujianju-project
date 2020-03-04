@@ -16,13 +16,15 @@ import {
 import {
     getIsWxClient,
     getQueryString,
-    locationUrl
+    locationUrl,
+    IsPC
 } from "./utils/util"
 // 引入axios
 import "./assets/icons/iconfont";
 import "./assets/icons/iconfont.css";
 import IconSvg from "./components/common/IconSvg.vue"; // svg组件
 Vue.prototype.$moment = moment
+Vue.prototype.IsPC = IsPC
 // 注册全局组件（register global）
 Vue.component("icon-svg", IconSvg);
 let state = getQueryString('state')
@@ -57,6 +59,7 @@ window.onload = function () {
     });
     Vue.use(VueParticles)
     Vue.use(Print);
+    // Vue.use(printJS);
     Vue.config.productionTip = false;
     new Vue({
         router,

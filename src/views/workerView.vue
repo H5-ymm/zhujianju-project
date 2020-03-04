@@ -1,54 +1,21 @@
 <template>
 	<div class="worker-view">
 		<p class="projectName" v-if="projectName">项目名称：{{projectName}}</p>
-		<el-form
-			:model="formData"
-			:inline="true"
-			label-width="120px"
-			label-position="right"
-			class="form"
-			:rules="formRules"
-			ref="dataForm"
-		>
+		<el-form :model="formData" :inline="true" label-width="120px" label-position="right" class="form" :rules="formRules" ref="dataForm">
 			<el-form-item label="联系方式" prop="tel">
-				<el-input
-					class="width220"
-					@change="changeInput"
-					:readonly="readonly"
-					placeholder="请输入联系方式"
-					v-model="formData.tel"
-					auto-complete="off"
-				></el-input>
+				<el-input class="width220" @change="changeInput" :readonly="readonly" placeholder="请输入联系方式" v-model="formData.tel" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="工人姓名" prop="name">
-				<el-input
-					v-model="formData.name"
-					:readonly="readonly"
-					placeholder="请输入工人姓名"
-					class="width220"
-					auto-complete="off"
-				></el-input>
+				<el-input v-model="formData.name" :readonly="readonly" placeholder="请输入工人姓名" class="width220" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="工种" prop="job_type">
-				<el-select
-					v-model="formData.job_type"
-					v-if="!readonly"
-					:disabled="readonly"
-					class="width220"
-					placeholder="请选择"
-				>
+				<el-select v-model="formData.job_type" v-if="!readonly" :disabled="readonly" class="width220" placeholder="请选择">
 					<el-option v-for="(item, index) in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>
 				<p class="el-input__inner width220" v-else>{{formData.type_name}}</p>
 			</el-form-item>
 			<el-form-item label="身份证" prop="id_card">
-				<el-input
-					v-model="formData.id_card"
-					:readonly="readonly"
-					placeholder="请输入身份证"
-					class="width220"
-					auto-complete="off"
-				></el-input>
+				<el-input v-model="formData.id_card" :readonly="readonly" placeholder="请输入身份证" class="width220" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="性别" placeholder="请选择性别">
 				<el-radio-group class="width220" v-if="!readonly" v-model="formData.sex">
@@ -58,14 +25,9 @@
 				<p class="el-input__inner width220" v-else>{{formData.sex==1?'男':formData.sex==2?'女':'未设置'}}</p>
 			</el-form-item>
 			<el-form-item label="紧急联系人" prop="link_man">
-				<el-input
-					class="width220"
-					placeholder="请输入紧急联系人"
-					v-model="formData.link_man"
-					auto-complete="off"
-				></el-input>
+				<el-input class="width220" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
 			</el-form-item>
-			<el-form-item label="地址">
+			<el-form-item label="来源地">
 				<div class="width220 select-input">
 					<selectCity @change="districtChange" v-if="!readonly"></selectCity>
 					<p class="el-input__inner" v-else>
@@ -74,41 +36,19 @@
 					</p>
 				</div>
 			</el-form-item>
-			<el-form-item label="来源地">
-				<el-input
-					class="width220"
-					:readonly="readonly"
-					placeholder="请输入来源地"
-					v-model="formData.address"
-					auto-complete="off"
-				></el-input>
+			<el-form-item label="住址">
+				<el-input class="width220" :readonly="readonly" placeholder="请输入住址" v-model="formData.address" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="当天体温" v-if="addSuccess">
 				<el-input class="width220" readonly v-model="temperature" auto-complete="off"></el-input>
 			</el-form-item>
 			<div class="btn-box">
-				<el-button
-					type="primary"
-					v-if="!bindProject&&!addSuccess"
-					class="submit-btn"
-					@click.native="formSubmit()"
-				>{{!readonly?'注册':'加入项目'}}</el-button>
+				<el-button type="primary" v-if="!bindProject&&!addSuccess" class="submit-btn" @click.native="formSubmit()">{{!readonly?'注册':'加入项目'}}</el-button>
 				<el-button type="primary" v-if="bindProject||id" class="submit-btn" @click.native="addTemp">添加体温</el-button>
 			</div>
 		</el-form>
-		<el-dialog
-			title="提示"
-			:visible.sync="dialogVisible"
-			width="28%"
-			center
-			:before-close="handleClose"
-		>
-			<el-input
-				v-model="temperature"
-				placeholder="请输入体温"
-				class="width220 input-tiwen"
-				auto-complete="off"
-			></el-input>
+		<el-dialog title="提示" :visible.sync="dialogVisible" width="28%" center :before-close="handleClose">
+			<el-input v-model="temperature" placeholder="请输入体温" class="width220 input-tiwen" auto-complete="off"></el-input>
 			<span slot="footer" class="dialog-footer">
 				<el-button @click="dialogVisible = false">取 消</el-button>
 				<el-button type="primary" @click="handleOk">确 定</el-button>
@@ -135,7 +75,7 @@ export default {
 	components: {
 		selectCity: selectCity
 	},
-	data() {
+	data () {
 		let validatereg = (rule, value, callback) => {
 			//验证用户名是否合法
 			let reg = /^1[3456789]\d{9}$/
@@ -204,7 +144,7 @@ export default {
 			projectName: ''
 		}
 	},
-	created() {
+	created () {
 		let state = getQueryString('state')
 		if (state) {
 			this.item_id = state.split('#')[0]
@@ -217,15 +157,15 @@ export default {
 		})
 	},
 	methods: {
-		getName() {
+		getName () {
 			getitemname({ item_id: this.item_id }).then(res => {
 				this.projectName = res
 			})
 		},
-		handleClose() {
+		handleClose () {
 			this.dialogVisible = false
 		},
-		changeInput(e) {
+		changeInput (e) {
 			let params = {
 				tel: e,
 				item_id: this.item_id
@@ -248,10 +188,10 @@ export default {
 				}
 			})
 		},
-		addTemp() {
+		addTemp () {
 			this.dialogVisible = true
 		},
-		handleOk(temperature) {
+		handleOk (temperature) {
 			if (!this.temperature) {
 				return this.$message.warning('请输入体温')
 			}
@@ -270,12 +210,12 @@ export default {
 				}
 			})
 		},
-		districtChange(val) {
+		districtChange (val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]
 			this.formData.areaid = val[2]
 		},
-		getType(pid) {
+		getType (pid) {
 			let params = {
 				pid,
 				keyword: ''
@@ -286,7 +226,7 @@ export default {
 				})
 			})
 		},
-		resetForm() {
+		resetForm () {
 			if (this.$refs["dataForm"]) {
 				// 清空验证信息表单
 				this.$refs["dataForm"].clearValidate();
@@ -294,7 +234,7 @@ export default {
 				this.$refs["dataForm"].resetFields();
 			}
 		},
-		bindWorkProject() {
+		bindWorkProject () {
 			let params = {
 				item_id: this.item_id,
 				id: this.id
@@ -309,7 +249,7 @@ export default {
 				}
 			});
 		},
-		addWorkBind(params) {
+		addWorkBind (params) {
 			addWork(params).then(response => {
 				if (response) {
 					this.$message.success("注册成功");
@@ -321,7 +261,7 @@ export default {
 				this.resetForm();
 			})
 		},
-		formSubmit() {
+		formSubmit () {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					if (this.readonly && !this.bindProject) {

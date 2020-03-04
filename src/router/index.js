@@ -31,114 +31,114 @@ const main = r =>
 
 // 注意 权限字段 authRule （严格区分大小写）
 export const constantRouterMap = [{
-        path: "*",
-        component: err404,
-        hidden: true
-    },
-    {
-        path: "/401",
-        component: err401,
-        name: "401",
-        hidden: true
-    },
-    {
-        path: "/404",
-        component: err404,
-        name: "404",
-        hidden: true
-    },
-    {
-        path: "/500",
-        component: err404,
-        name: "500",
-        hidden: true
-    },
-    {
-        path: "/login",
-        component: login,
-        name: "登录",
-        hidden: true
-    },
-    {
-        path: '/workerView',
-        component: workerView,
-        name: "登录",
-        hidden: true
-    },
-    {
-        path: "/",
-        component: Home,
-        redirect: "/readme",
-        name: "首页",
-        hidden: true
-    }
+    path: "*",
+    component: err404,
+    hidden: true
+},
+{
+    path: "/401",
+    component: err401,
+    name: "401",
+    hidden: true
+},
+{
+    path: "/404",
+    component: err404,
+    name: "404",
+    hidden: true
+},
+{
+    path: "/500",
+    component: err404,
+    name: "500",
+    hidden: true
+},
+{
+    path: "/login",
+    component: login,
+    name: "登录",
+    hidden: true
+},
+{
+    path: '/workerView',
+    component: workerView,
+    name: "登录",
+    hidden: true
+},
+{
+    path: "/",
+    component: Home,
+    redirect: "/readme",
+    name: "首页",
+    hidden: true
+}
 
 ];
 
 export const manageRouter = [{
-        path: "/readme",
-        component: Home,
-        redirect: "/readme/main",
-        icon: "xiangmu",
-        name: "项目管理",
-        noDropdown: true,
-        children: [{
-            path: 'main',
-            component: main
-        }, {
-            path: 'projectDetail',
-            component: projectDetail
-        }]
-    },
-    {
-        path: "/companyManange",
-        component: Home,
-        redirect: "/readme/main",
-        icon: "qiyeguanli",
-        name: "企业工程分类",
-        noDropdown: true,
-        children: [{
-            path: 'companyManange',
-            component: companyManange
-        }]
-    },
-    {
-        path: "/staffManage",
-        component: Home,
-        redirect: "/readme/main",
-        icon: "gongren",
-        name: "工人管理",
-        noDropdown: true,
-        children: [{
-            path: 'staffManage',
-            component: staffManage
-        }]
-    },
-    {
-        path: "/project",
-        component: Home,
-        redirect: "/readme/main",
-        icon: "xiangmu1",
-        name: "用工统计",
-        noDropdown: true,
-        children: [{
-            path: 'project',
-            component: project
-        }]
-    },
+    path: "/readme",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "xiangmu",
+    name: "项目管理",
+    noDropdown: true,
+    children: [{
+        path: 'main',
+        component: main
+    }, {
+        path: 'projectDetail',
+        component: projectDetail
+    }]
+},
+{
+    path: "/companyManange",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "qiyeguanli",
+    name: "企业管理",
+    noDropdown: true,
+    children: [{
+        path: 'companyManange',
+        component: companyManange
+    }]
+},
+{
+    path: "/staffManage",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "gongren",
+    name: "工人管理",
+    noDropdown: true,
+    children: [{
+        path: 'staffManage',
+        component: staffManage
+    }]
+},
+{
+    path: "/project",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "xiangmu1",
+    name: "用工统计",
+    noDropdown: true,
+    children: [{
+        path: 'project',
+        component: project
+    }]
+},
 
-    {
-        path: "/dataDictionary",
-        component: Home,
-        redirect: "/readme/main",
-        icon: "shujuzidian",
-        name: "分类管理",
-        noDropdown: true,
-        children: [{
-            path: 'dataDictionary',
-            component: dataDictionary
-        }]
-    },
+{
+    path: "/dataDictionary",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "shujuzidian",
+    name: "分类管理",
+    noDropdown: true,
+    children: [{
+        path: 'dataDictionary',
+        component: dataDictionary
+    }]
+},
 ]
 export const workerRouter = [{
     path: "/readme",
@@ -151,7 +151,7 @@ export const workerRouter = [{
         path: 'staffManage',
         component: staffManage
     }]
-}, ]
+},]
 export default new VueRouter({
     // mode: 'history', //后端支持可开
     mode: ROUTER_MODE,
@@ -178,14 +178,14 @@ export const asyncRouterMap = [{
             authRule: ["user_manage/admin_manage"]
         },
         children: [{
-                path: "authAdmin",
-                component: authAdmin,
-                name: "管理员管理",
-                icon: "",
-                meta: {
-                    authRule: ["admin/auth.admin/index"]
-                }
-            },
+            path: "authAdmin",
+            component: authAdmin,
+            name: "管理员管理",
+            icon: "",
+            meta: {
+                authRule: ["admin/auth.admin/index"]
+            }
+        },
             // {
             //     path: "authRole",
             //     component: authRole,

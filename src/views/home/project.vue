@@ -7,27 +7,13 @@
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
-					<el-button type="primary" icon="el-icon-document-copy" v-print="'#printTest'">打印</el-button>
+					<el-button type="primary" icon="el-icon-document-copy" v-print="'#printTest'" v-if="IsPC()">打印</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
-		<el-table
-			id="printTest"
-			class="common-table"
-			v-loading="loading"
-			:data="list"
-			style="width: 100%;"
-			max-height="1000px"
-		>
+		<el-table id="printTest" class="common-table" v-loading="loading" :data="list" style="width: 100%;" max-height="1000px">
 			<el-table-column label="项目名称" align="center" prop="name" width="120px"></el-table-column>
-			<el-table-column
-				:label="item.name"
-				v-if="options.length"
-				:key="index"
-				v-for="(item,index) in options"
-				width="100px"
-				align="center"
-			>
+			<el-table-column :label="item.name" v-if="options.length" :key="index" v-for="(item,index) in options" width="100px" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.typelist[index]}}</span>
 				</template>
@@ -38,12 +24,7 @@
 				</template>
 			</el-table-column>
 		</el-table>
-		<el-pagination
-			:page-size="query.limit"
-			@current-change="handleCurrentChange"
-			layout="prev, pager, next,total"
-			:total="total"
-		></el-pagination>
+		<el-pagination :page-size="query.limit" @current-change="handleCurrentChange" layout="prev, pager, next,total" :total="total"></el-pagination>
 	</div>
 </template>
 <script>
@@ -52,7 +33,7 @@ import {
 } from "../../api/workman/index";
 import { geTypeAll } from "../../api/file/data"
 export default {
-	data() {
+	data () {
 		return {
 			query: {
 				keyword: '',
@@ -69,7 +50,7 @@ export default {
 		};
 	},
 	methods: {
-		onReset() {
+		onReset () {
 			this.query = {
 				keyword: '',
 				page: 1,
@@ -77,7 +58,7 @@ export default {
 			};
 			this.getList();
 		},
-		getType(pid) {
+		getType (pid) {
 			let params = {
 				pid: pid,
 				keyword: ''
@@ -90,18 +71,18 @@ export default {
 				})
 			})
 		},
-		onSubmit() {
+		onSubmit () {
 			this.$router.push({
 				path: "",
 				query: this.query
 			});
 			this.getList();
 		},
-		handleCurrentChange(val) {
+		handleCurrentChange (val) {
 			this.query.page = val;
 			this.getList();
 		},
-		getList() {
+		getList () {
 			this.loading = true;
 			listCount(this.query)
 				.then(response => {
@@ -116,7 +97,7 @@ export default {
 				});
 		},
 	},
-	created() {
+	created () {
 		// 将参数拷贝进查询对象
 		let query = this.$route.query;
 		this.query = Object.assign(this.query, query);
