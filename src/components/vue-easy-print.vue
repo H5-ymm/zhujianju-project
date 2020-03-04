@@ -1,11 +1,9 @@
 <template>
-  <div>
-    <div v-show="tableShow" ref="template">
+  <div v-show="tableShow" ref="template" class="view-width">
       <slot :getChineseNumber="getChineseNumber">
-        <div></div>
+        <div class="view-width"></div>
       </slot>
     </div>
-  </div>
 </template>
 
 <script>
@@ -18,11 +16,10 @@ export default {
       type: Boolean,
       default: false
     },
-
     // 针对分页表格模式：传入的打印数据。
     tableData: {
       type: Object,
-      default () {
+      default() {
         return undefined;
       }
     },
@@ -40,15 +37,15 @@ export default {
     beforeCopy: Function,
     beforePrint: Function
   },
-  data () {
+  data() {
     return {
     };
   },
-  mounted () {
+  mounted() {
     this.init();
   },
   methods: {
-    init () {
+    init() {
       let printI = document.getElementById("easyPrintIframe");
       if (!printI) {
         printI = document.createElement("iframe");
@@ -57,6 +54,7 @@ export default {
         printI.style.width = '0'
         printI.style.height = '0'
         printI.style.top = '-100px'
+        printI.style.fontSize = '10px'
         printI.style.color = '#333'
         // 兼容ie
         if (
@@ -80,7 +78,7 @@ export default {
         this.getStyle();
       }
     },
-    print () {
+    print() {
       if (typeof this.beforeCopy === "function") {
         // 检测到有复制前需要执行的功能
         this.beforeCopy();
@@ -103,18 +101,18 @@ export default {
         }, 100);
       })
     },
-    getStyle () {
+    getStyle() {
       let printI = document.getElementById("easyPrintIframe");
       var str = "",
         styles1 = document.querySelectorAll("style");
-      for (var i = 0; i < styles1.length; i++) {
+      for (var i = 0;i < styles1.length;i++) {
         str += styles1[i].outerHTML;
       }
 
       printI.contentDocument.head.innerHTML = str;
       // 添加link引入
       let styles = document.querySelectorAll("link");
-      for (let i = 0; i < styles.length; i++) {
+      for (let i = 0;i < styles.length;i++) {
         // chrome 正常，firefox不正常，能执行到，但是添加没结果
         let link = document.createElement("link");
         link.setAttribute("rel", "stylesheet");
@@ -126,7 +124,7 @@ export default {
       }
 
     },
-    getChineseNumber (currencyDigits) {
+    getChineseNumber(currencyDigits) {
       // 转换数字到中文大写，请用prop传递给模版组件，这个函数在网上扣的。
       var MAXIMUM_NUMBER = 99999999999.99;
       // Predefine the radix characters and currency symbols for output:
@@ -225,7 +223,7 @@ export default {
       // Process integral part if it is larger than 0:
       if (Number(integral) > 0) {
         zeroCount = 0;
-        for (i = 0; i < integral.length; i++) {
+        for (i = 0;i < integral.length;i++) {
           p = integral.length - i - 1;
           d = integral.substr(i, 1);
           quotient = p / 4;
@@ -248,7 +246,7 @@ export default {
       }
       // Process decimal part if there is:
       if (decimal != "") {
-        for (i = 0; i < decimal.length; i++) {
+        for (i = 0;i < decimal.length;i++) {
           d = decimal.substr(i, 1);
           if (d != "0") {
             outputCharacters += digits[Number(d)] + decimals[i];
@@ -268,3 +266,9 @@ export default {
   }
 };
 </script>
+<style>
+.view-width {
+  width: 100%;
+  height: 2000px;
+}
+</style>

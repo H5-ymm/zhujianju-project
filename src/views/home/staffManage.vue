@@ -4,8 +4,13 @@
 			<el-form-item class="query-form-item">
 				<el-input v-model="query.keyword" class="width200" placeholder="工人姓名"></el-input>
 			</el-form-item>
-			<el-form-item label="工种">
-				<el-select v-model="query.job_type" :disabled="readonly" class="width240" placeholder="请选择">
+			<el-form-item v-if="!is_wmadmin">
+				<el-select v-model="query.item_id" filterable class="width240" placeholder="请选择项目名称">
+					<el-option v-for="(item, index) in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
+			</el-form-item>
+			<el-form-item>
+				<el-select v-model="query.job_type" class="width240" placeholder="请选择工种">
 					<el-option v-for="(item, index) in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>
 			</el-form-item>
@@ -17,12 +22,17 @@
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
 					<el-button type="primary" icon="el-icon-plus" v-if="is_wmadmin" @click.native="handleForm(null, null)">新增</el-button>
 					<el-button type="primary" v-if="is_wmadmin" @click.native="viewQrcode" icon="el-icon-view">查看二维码</el-button>
+						<el-button type="primary" icon="el-icon-document-copy" @click="printView" v-if="IsPC()">打印</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
-		<el-table class="common-table" v-loading="loading" :data="list" style="width: 100%;" max-height="1000px">
+		 <vue-easy-print :tableShow="false" ref="easyPrint" :onePageRow="10">
+				<template>
+					<workerTable :list="list" :is_wmadmin="is_wmadmin"></workerTable>
+				</template>
+    </vue-easy-print>
+		<el-table class="common-table" id="printTest" v-loading="loading" :data="list" style="width: 100%;" max-height="1000px">
 			<el-table-column label="工人姓名" align="center" prop="name" width="110px"></el-table-column>
-			<el-table-column label="所在项目" prop="job_type" width="110px" align="center"></el-table-column>
 			<el-table-column label="地区" min-width="110px" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.province}}{{scope.row.city}}{{scope.row.area}}{{scope.row.address}}</span>
@@ -47,9 +57,20 @@
 					<el-tag :type="scope.row.status==0?'warning':scope.row.status==1?'success':'danger'">{{scope.row.status==0?'待审核':scope.row.status==1?'已通过':'已拒绝'}}</el-tag>
 				</template>
 			</el-table-column>
-			<el-table-column label="操作" v-if="is_wmadmin" align="center" min-width="120px" fixed="right">
+			<el-table-column label="签到状态" align="center" v-if="is_wmadmin">
+				<template slot-scope="scope">
+					<el-tag :type="scope.row.is_attendance==0?'warning':'success'">{{scope.row.is_attendance==0?'未签到':'已签到'}}</el-tag>
+				</template>
+			</el-table-column>
+			<el-table-column label="审核签到状态" align="center" v-if="is_wmadmin">
+					<template slot-scope="scope">
+					<el-tag :type="scope.row.sure_attendance==0?'warning':scope.row.sure_attendance==1?'success':'danger'">{{scope.row.sure_attendance==0?'待确认':scope.row.sure_attendance==1?'已确认':'未签到'}}</el-tag>
+				</template>
+			</el-table-column>
+			<el-table-column label="操作" class="no-print" v-if="is_wmadmin" align="center" min-width="120px" fixed="right">
 				<template slot-scope="scope">
 					<el-button type="text" size="small" @click.native="switchCheck(scope.row)">审核</el-button>
+					<el-button type="text" size="small" @click.native="checkSign(scope.row)">审核签到</el-button>
 					<el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="text" size="small" @click.native="viewDetail(scope.$index, scope.row)">查看</el-button>
 					<el-button type="text" size="small" @click.native="handleDel(scope.$index, scope.row)">删除</el-button>
@@ -123,13 +144,17 @@ import {
 	getWorkmanDetail,
 	saveStatus,
 	getworkmanbytel,
-	getqrcode
+	getqrcode,
+	sureAttendance
 } from "../../api/workman/index";
+import { getNamelist } from "../../api/project/index";
 import WorkerDetail from "../../components/modal/workerDetail.vue";
 import selectCity from "../../components/selectCity.vue";
 import { geTypeAll } from "../../api/file/data"
 import { validateIdCard, getImg } from "../../utils/util.js";
-// import { mapGetters } from "vuex"
+import vueEasyPrint from "../../components/vue-easy-print";
+import workerTable from "../../components/workerTable";
+
 const formJson = {
 	id: "",
 	sex: "",
@@ -144,9 +169,11 @@ const formJson = {
 export default {
 	components: {
 		WorkerDetail: WorkerDetail,
-		selectCity: selectCity
+		selectCity: selectCity,
+		workerTable: workerTable,
+		vueEasyPrint: vueEasyPrint
 	},
-	data () {
+	data() {
 		let validatereg = (rule, value, callback) => {
 			//验证用户名是否合法
 			let reg = /^1[3456789]\d{9}$/
@@ -176,8 +203,10 @@ export default {
 			query: {
 				keyword: '',
 				page: 1,
-				limit: 20,
-				date: ''
+				limit: 10,
+				date: '',
+				item_id: '',
+				job_type: ''
 			},
 			list: [],
 			value: '',
@@ -214,16 +243,19 @@ export default {
 			},
 			deleteLoading: false,
 			checkObj: {},
-			readonly: false
+			readonly: false,
+			checkStatus: 1,
+			projectList: [],
+			workman_id: ''
 		};
 	},
 	computed: {
-		is_wmadmin () {
+		is_wmadmin() {
 			return this.$store.state.admin.is_wmadmin
 		}
 	},
-	created () {
-		// 将参数拷贝进查询对象
+	created() {
+		// 将参数拷projectList贝进查询对象
 		let query = this.$route.query;
 		this.query = Object.assign(this.query, query);
 		this.query.limit = parseInt(this.query.limit);
@@ -231,9 +263,18 @@ export default {
 		this.getType(3).then(res => {
 			this.options = res
 		})
+		this.getProject()
 	},
 	methods: {
-		viewQrcode () {
+		getProject() {
+			getNamelist().then(res => {
+				this.projectList = res
+			})
+		},
+		printView() {
+			this.$refs.easyPrint.print()
+		},
+		viewQrcode() {
 			getqrcode().then(res => {
 				if (res) {
 					let url = getImg(res)
@@ -248,12 +289,12 @@ export default {
 				}
 			})
 		},
-		districtChange (val) {
+		districtChange(val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]
 			this.formData.areaid = val[2]
 		},
-		changeInput (e) {
+		changeInput(e) {
 			getworkmanbytel({ tel: e }).then(res => {
 				if (res) {
 					this.formData = res
@@ -263,16 +304,18 @@ export default {
 				}
 			})
 		},
-		onReset () {
+		onReset() {
 			this.query = {
 				keyword: '',
 				page: 1,
-				limit: 20,
-				date: ''
+				limit: 10,
+				date: '',
+				item_id: '',
+				job_type: ''
 			};
 			this.getList();
 		},
-		getType (pid) {
+		getType(pid) {
 			let params = {
 				pid: pid,
 				keyword: ''
@@ -285,18 +328,43 @@ export default {
 				})
 			})
 		},
-		onSubmit () {
+		checkSign(val) {
+			console.log(val)
+			this.checkStatus = 2
+			this.status = Number(val.sure_attendance)
+			console.log(this.status)
+			this.workman_id = val.id
+			this.dialogVisible = true
+		},
+		reviewSign() {
+			let params = {
+				workman_id: this.workman_id,
+				status: this.status,
+				time: this.query.date
+			}
+			sureAttendance(params).then(res => {
+				this.status = 1
+				if (res) {
+					this.dialogVisible = false;
+					this.$message.success("操作成功");
+					this.getList()
+				} else {
+					this.$message.error("操作失败");
+				}
+			})
+		},
+		onSubmit() {
 			this.$router.push({
 				path: "",
 				query: this.query
 			});
 			this.getList();
 		},
-		handleCurrentChange (val) {
+		handleCurrentChange(val) {
 			this.query.page = val;
 			this.getList();
 		},
-		getList () {
+		getList() {
 			this.loading = true;
 			getWorkmanList(this.query)
 				.then(response => {
@@ -314,7 +382,7 @@ export default {
 				});
 		},
 		// 刷新表单
-		resetForm () {
+		resetForm() {
 			if (this.$refs["dataForm"]) {
 				this.readonly = false
 				// 清空验证信息表单
@@ -324,15 +392,16 @@ export default {
 			}
 		},
 		// 隐藏表单
-		hideForm () {
+		hideForm() {
 			// 更改值
+			this.readonly = false
 			this.formVisible = !this.formVisible;
 			// 清空表单
 			this.$refs["dataForm"].resetFields();
 			return true;
 		},
 		// 显示表单
-		handleForm (index, row) {
+		handleForm(index, row) {
 			this.formVisible = true;
 			this.formData = JSON.parse(JSON.stringify(formJson));
 			if (row !== null) {
@@ -349,7 +418,7 @@ export default {
 				this.formRules = this.editRules;
 			}
 		},
-		getDetail (id) {
+		getDetail(id) {
 			getWorkmanDetail({ id }).then(res => {
 				if (res.provinceid) {
 					this.address = [res.provinceid, res.cityid, res.areaid]
@@ -357,36 +426,41 @@ export default {
 				this.formData = res
 			})
 		},
-		viewDetail (index, row) {
+		viewDetail(index, row) {
 			this.workerId = row.id
 			this.formDetailVisible = true
 		},
-		switchCheck (item) {
+		switchCheck(item) {
+			this.checkStatus = 1
 			this.checkObj = item
 			this.dialogVisible = true
 		},
-		handleClose () {
+		handleClose() {
 			this.dialogVisible = false
 		},
-		handleCheck () {
-			let params = {
-				id: this.checkObj.wid,
-				status: this.status
-			}
-			this.formLoading = true;
-			saveStatus(params).then(response => {
-				if (response) {
-					this.formLoading = false;
-					this.$message.success("操作成功");
-					this.dialogVisible = false;
-					this.getList()
-				} else {
-					this.$message.error("操作失败");
+		handleCheck() {
+			if (this.checkStatus == 1) {
+				let params = {
+					id: this.checkObj.wid,
+					status: this.status
 				}
-				this.resetForm();
-			});
+				this.formLoading = true;
+				saveStatus(params).then(response => {
+					if (response) {
+						this.formLoading = false;
+						this.$message.success("操作成功");
+						this.dialogVisible = false;
+						this.getList()
+					} else {
+						this.$message.error("操作失败");
+					}
+					this.resetForm();
+				});
+			} else {
+				this.reviewSign()
+			}
 		},
-		addUser (data) {
+		addUser(data) {
 			addWorkman(data).then(response => {
 				if (response) {
 					this.formLoading = false;
@@ -399,7 +473,7 @@ export default {
 				this.resetForm();
 			});
 		},
-		formSubmit () {
+		formSubmit() {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					this.formLoading = true;
@@ -423,7 +497,7 @@ export default {
 			});
 		},
 		// 删除
-		handleDel (index, row) {
+		handleDel(index, row) {
 			if (row.id) {
 				this.$confirm("确认删除该工人吗?", "提示", {
 					type: "warning"

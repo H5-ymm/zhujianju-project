@@ -33,7 +33,7 @@ import {
 } from "../../api/workman/index";
 import { geTypeAll } from "../../api/file/data"
 export default {
-	data () {
+	data() {
 		return {
 			query: {
 				keyword: '',
@@ -50,7 +50,7 @@ export default {
 		};
 	},
 	methods: {
-		onReset () {
+		onReset() {
 			this.query = {
 				keyword: '',
 				page: 1,
@@ -58,7 +58,7 @@ export default {
 			};
 			this.getList();
 		},
-		getType (pid) {
+		getType(pid) {
 			let params = {
 				pid: pid,
 				keyword: ''
@@ -71,18 +71,18 @@ export default {
 				})
 			})
 		},
-		onSubmit () {
+		onSubmit() {
 			this.$router.push({
 				path: "",
 				query: this.query
 			});
 			this.getList();
 		},
-		handleCurrentChange (val) {
+		handleCurrentChange(val) {
 			this.query.page = val;
 			this.getList();
 		},
-		getList () {
+		getList() {
 			this.loading = true;
 			listCount(this.query)
 				.then(response => {
@@ -97,7 +97,7 @@ export default {
 				});
 		},
 	},
-	created () {
+	created() {
 		// 将参数拷贝进查询对象
 		let query = this.$route.query;
 		this.query = Object.assign(this.query, query);

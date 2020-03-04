@@ -53,7 +53,7 @@
 					</el-form-item>
 					<el-form-item label="建设单位">
 						<div class="width240">
-							<el-input class="width240 select-input" v-model="formData.construction_info.com_name" readonly></el-input>
+							<el-input class="width240 select-input" v-model="formData.construction_user.com_name" readonly></el-input>
 							<el-input class="width240 select-input" v-model="formData.construction_info.corporation_name" readonly></el-input>
 							<el-input v-model="formData.construction_user" readonly></el-input>
 						</div>
@@ -93,6 +93,14 @@
 							<el-input v-model="formData.detection_user" readonly></el-input>
 						</div>
 					</el-form-item>
+					<el-form-item prop="detection_unit" label="商砼单位">
+						<div class="width240" v-if="formData.commercialconcrete_info">
+							<el-input class="width240 
+							select-input"v-model="formData.commercialconcrete_info.com_name" readonly></el-input>
+							<el-input class="width240 select-input" v-model="formData.commercialconcrete_info.corporation_name" readonly></el-input>
+							<el-input v-model="formData.commercialconcrete_user" readonly></el-input>
+						</div>
+					</el-form-item>
 					<el-form-item label="监督组">
 						<el-input class="width240" v-model="formData.monitoring_group" readonly></el-input>
 					</el-form-item>
@@ -104,7 +112,7 @@
 <script>
 import { getDetail } from "../../api/project/index";
 export default {
-	data () {
+	data() {
 		return {
 			formData: {
 				survey_info: {},
@@ -118,16 +126,16 @@ export default {
 		}
 	},
 	computed: {
-		address () {
+		address() {
 			return this.formData.province + this.formData.city + this.formData.area
 		}
 	},
-	created () {
+	created() {
 		this.id = this.$route.query.id
 		this.getProject(this.id)
 	},
 	methods: {
-		getProject (id) {
+		getProject(id) {
 			getDetail({ id }).then(res => {
 				this.formData = res
 			})

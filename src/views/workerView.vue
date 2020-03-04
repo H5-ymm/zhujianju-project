@@ -1,9 +1,19 @@
 <template>
 	<div class="worker-view">
-		<p class="projectName" v-if="projectName">项目名称：{{projectName}}</p>
-		<el-form :model="formData" :inline="true" label-width="120px" label-position="right" class="form" :rules="formRules" ref="dataForm">
-			<el-form-item label="联系方式" prop="tel">
-				<el-input class="width220" @change="changeInput" :readonly="readonly" placeholder="请输入联系方式" v-model="formData.tel" auto-complete="off"></el-input>
+		  <p class="projectName" v-if="projectName">项目名称：{{projectName}}</p>
+			<el-form :model="formData" 
+			class="tel-form form" :inline="true" label-width="120px"  v-if="step==1" label-position="right" :rules="rules" ref="telForm">
+				<el-form-item label="手机号" prop="tel">
+					<el-input class="width220"  placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
+				</el-form-item>
+				<div class="btn-box">
+					<el-button type="primary"  class="submit-btn" @click.native="submitTel">确定</el-button>
+				</div>
+		</el-form>
+		<el-form :model="formData" :inline="true" label-width="120px" v-else 
+		label-position="right" class="form" :rules="formRules" ref="dataForm">
+			<el-form-item label="手机号">
+				<el-input class="width220" readonly placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="工人姓名" prop="name">
 				<el-input v-model="formData.name" :readonly="readonly" placeholder="请输入工人姓名" class="width220" auto-complete="off"></el-input>
@@ -25,7 +35,7 @@
 				<p class="el-input__inner width220" v-else>{{formData.sex==1?'男':formData.sex==2?'女':'未设置'}}</p>
 			</el-form-item>
 			<el-form-item label="紧急联系人" prop="link_man">
-				<el-input class="width220" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
+				<el-input class="width220" :readonly="readonly" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
 			</el-form-item>
 			<el-form-item label="来源地">
 				<div class="width220 select-input">
@@ -42,9 +52,14 @@
 			<el-form-item label="当天体温" v-if="addSuccess">
 				<el-input class="width220" readonly v-model="temperature" auto-complete="off"></el-input>
 			</el-form-item>
-			<div class="btn-box">
-				<el-button type="primary" v-if="!bindProject&&!addSuccess" class="submit-btn" @click.native="formSubmit()">{{!readonly?'注册':'加入项目'}}</el-button>
-				<el-button type="primary" v-if="bindProject||id" class="submit-btn" @click.native="addTemp">添加体温</el-button>
+			<div class="btn-box" v-if="!bindProject&&!addSuccess">
+				<el-button type="primary" class="submit-btn" @click.native="formSubmit()">
+					{{!readonly?'注册':'加入项目'}}</el-button>
+			</div>
+			<div class="btn-box" v-if="bindProject&&id">
+				<el-button type="primary" class="submit-btn" :disabled="isSign" 
+				 @click.native="setSign">{{!isSign?'签到':'已签到'}}</el-button>
+				<el-button type="primary" class="submit-btn" @click.native="addTemp">添加体温</el-button>
 			</div>
 		</el-form>
 		<el-dialog title="提示" :visible.sync="dialogVisible" width="28%" center :before-close="handleClose">
@@ -60,12 +75,12 @@
 import {
 	bindWorkman,
 	addtemperature,
-	todaytemperature,
 	addWork,
 	binditem,
 	getitemname
 } from "../api/workman/index";
 import {
+	addAttendance,
 	getWxworkmanbytel
 } from "../api/wx/wxApi";
 import { geTypeAll } from "../api/file/data"
@@ -75,7 +90,7 @@ export default {
 	components: {
 		selectCity: selectCity
 	},
-	data () {
+	data() {
 		let validatereg = (rule, value, callback) => {
 			//验证用户名是否合法
 			let reg = /^1[3456789]\d{9}$/
@@ -118,11 +133,13 @@ export default {
 			},
 			dialogVisible: false,
 			temperature: '',
-			formRules: {
+			rules: {
 				tel: [
-					{ required: true, message: "请输入联系人电话", trigger: "blur" },
+					{ required: true, message: "请输入手机号", trigger: "blur" },
 					{ validator: validatereg, trigger: 'blur' }
-				],
+				]
+			},
+			formRules: {
 				name: [
 					{ required: true, message: "请输入工人姓名", trigger: "blur" }
 				],
@@ -141,13 +158,18 @@ export default {
 			openid: '',
 			bindProject: false,
 			addSuccess: false,
-			projectName: ''
+			projectName: '',
+			step: 1,
+			isSign: false
 		}
 	},
-	created () {
+	created() {
 		let state = getQueryString('state')
 		if (state) {
 			this.item_id = state.split('#')[0]
+		}
+		if (!this.item_id) {
+			return this.$message.warning('无效的二维码')
 		}
 		this.openid = sessionStorage.getItem('zhujianjuOpenid')
 		this.formData.openid = sessionStorage.getItem('zhujianjuOpenid')
@@ -157,41 +179,77 @@ export default {
 		})
 	},
 	methods: {
-		getName () {
+		getName() {
 			getitemname({ item_id: this.item_id }).then(res => {
 				this.projectName = res
 			})
 		},
-		handleClose () {
+		handleClose() {
 			this.dialogVisible = false
 		},
-		changeInput (e) {
-			let params = {
-				tel: e,
-				item_id: this.item_id
+		submitTel() {
+			this.$refs["telForm"].validate(valid => {
+				if (valid) {
+					let params = {
+						tel: this.formData.tel,
+						item_id: this.item_id
+					}
+					this.byTelGetInfo(params)
+				}
+			})
+		},
+		resetFormTel() {
+			if (this.$refs["telForm"]) {
+				this.$refs["telForm"].clearValidate();
+				this.$refs["telForm"].resetFields();
 			}
+		},
+		byTelGetInfo(params) {
 			getWxworkmanbytel(params).then(res => {
 				if (res && res.id) {
 					this.id = res.id || ''
 					if (res.is_link == '1') {
 						this.bindProject = true
+						if (res.is_attendance) {
+							this.isSign = true
+						} else {
+							this.isSign = false
+						}
 					} else {
+						this.isSign = false
 						this.bindProject = false
 					}
 					this.formData = res
 					this.readonly = true
-					this.$refs["dataForm"].clearValidate();
+					this.$refs["telForm"].clearValidate();
 				} else {
+					this.isSign = false
 					this.bindProject = false
 					this.readonly = false
 					this.$message.warning('请先注册')
 				}
+				this.step = 2
 			})
 		},
-		addTemp () {
+		addTemp() {
 			this.dialogVisible = true
 		},
-		handleOk (temperature) {
+		setSign() {
+			let params = {
+				workman_id: this.id || this.formData.id,
+				item_id: this.item_id
+			}
+			addAttendance(params).then(res => {
+				if (res) {
+					this.$message.success('签到成功')
+					this.isSign = true
+				} else {
+					this.$message.warning('签到失败')
+					this.isSign = false
+				}
+			})
+		},
+		handleOk(temperature) {
 			if (!this.temperature) {
 				return this.$message.warning('请输入体温')
 			}
@@ -210,12 +268,12 @@ export default {
 				}
 			})
 		},
-		districtChange (val) {
+		districtChange(val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]
 			this.formData.areaid = val[2]
 		},
-		getType (pid) {
+		getType(pid) {
 			let params = {
 				pid,
 				keyword: ''
@@ -226,42 +284,44 @@ export default {
 				})
 			})
 		},
-		resetForm () {
+		resetForm() {
 			if (this.$refs["dataForm"]) {
-				// 清空验证信息表单
 				this.$refs["dataForm"].clearValidate();
-				// 刷新表单
 				this.$refs["dataForm"].resetFields();
 			}
 		},
-		bindWorkProject () {
+		bindWorkProject() {
 			let params = {
 				item_id: this.item_id,
 				id: this.id
 			}
 			binditem(params).then(response => {
 				if (response) {
-					this.dialogVisible = true
+					this.bindProject = true
 					this.$message.success("加入项目成功");
-					// this.getTodaytemperature(this.formData.id, '')
 				} else {
+					this.bindProject = false
 					this.$message.error("加入项目失败");
 				}
 			});
 		},
-		addWorkBind (params) {
+		addWorkBind(params) {
 			addWork(params).then(response => {
 				if (response) {
+					this.id = response
 					this.$message.success("注册成功");
 					this.bindProject = true
+					this.readonly = true
 				} else {
+					this.id = ''
+					this.readonly = false
 					this.bindProject = false
 					this.$message.error("注册失败");
 				}
 				this.resetForm();
 			})
 		},
-		formSubmit () {
+		formSubmit() {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					if (this.readonly && !this.bindProject) {
@@ -287,8 +347,27 @@ export default {
   .projectName {
     color: #333;
     font-weight: bold;
-    margin-bottom: 10px;
+    font-size: 20px;
     margin-left: 20px;
+    margin-bottom: 10px;
+  }
+  .btn-box {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0 20px;
+    .submit-btn {
+      flex: auto;
+      margin: 0 20px;
+    }
+  }
+  .tel-form {
+    margin: 45% auto;
+    width: 100%;
+    .btn-box {
+      width: 50%;
+      margin: 20% auto;
+    }
   }
   .input-text {
     color: #606266;
@@ -304,16 +383,6 @@ export default {
 
     &:focus {
       padding: 2px 15px;
-    }
-  }
-  .btn-box {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin: 0 20px;
-    .submit-btn {
-      flex: auto;
-      margin: 0 20px;
     }
   }
 }
