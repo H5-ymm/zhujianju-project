@@ -6,6 +6,13 @@
   "description": "建筑业",
   "glyphs": [
     {
+      "icon_id": "7316717",
+      "name": "项目详情",
+      "font_class": "xiangmuxiangqing",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
       "icon_id": "9241153",
       "name": "项目",
       "font_class": "xiangmu1",

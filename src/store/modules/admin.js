@@ -39,14 +39,14 @@ const getters = {
     token: state => state.token,
     authRules: state => state.authRules,
     routers: state => state.routers,
-    is_wmadmin: state => state.is_wmadmin ?state.is_wmadmin : sessionStorage.getItem('is_wmadmin')
+    is_wmadmin: state => state.is_wmadmin ? state.is_wmadmin : sessionStorage.getItem('is_wmadmin')
 };
 
 // actions
 const actions = {
     // 用户名登录
-    loginName({
-        commit
+    loginName ({
+        commit, dispatch
     }, userInfo) {
         const userName = userInfo.userName ? userInfo.userName.trim() : "";
         const pwd = userInfo.pwd ? userInfo.pwd : "";
@@ -63,7 +63,8 @@ const actions = {
                         commit(types.RECEIVE_ADMIN_ID, response.id);
                         commit(types.RECEIVE_ADMIN_TOKEN, response.token);
                         commit(types.RECEIVE_ADMIN_AUTH_RULES, []);
-                        localStorage.setItem('zhujianj-token',response.id)
+                        // dispatch('userInfo')
+                        localStorage.setItem('zhujianj-token', response.id)
                         localStorage.setItem('zhujianj-adminId', response.token)
                     }
                     resolve(response);
@@ -73,7 +74,7 @@ const actions = {
                 });
         });
     },
-    userInfo({
+    userInfo ({
         commit
     }) {
         return new Promise((resolve, reject) => {
@@ -84,10 +85,14 @@ const actions = {
                     }
                     commit(types.RECEIVE_ADMIN_NAME, response.username);
                     commit(types.RECEIVE_ADMIN_AVATAR, response.avatar);
-                    commit(types.RECEIVE_ADMIN_AUTH_RULES, response.authRules);
                     commit(types.RECEIVE_ADMIN, response.is_wmadmin);
-                    resolve(response);
                     sessionStorage.setItem('is_wmadmin', response.is_wmadmin)
+                    if (response.is_wmadmin) {
+                        commit(types.RECEIVE_ADMIN_AUTH_RULES, ['worker']);
+                    } else {
+                        commit(types.RECEIVE_ADMIN_AUTH_RULES, response.authRules);
+                    }
+                    resolve(response);
                 })
                 .catch(error => {
                     console.log(error)
@@ -96,18 +101,19 @@ const actions = {
         });
     },
     // 登出
-    loginOut({
+    loginOut ({
         commit
     }) {
         return new Promise((resolve, reject) => {
             logout()
                 .then((res) => {
-                    console.log(res)
                     if (res) {
                         commit(types.RECEIVE_ADMIN_ID, "");
                         commit(types.RECEIVE_ADMIN_TOKEN, "");
                         commit(types.RECEIVE_ADMIN_AUTH_RULES, []);
                         commit(types.RECEIVE_ADMIN, '');
+                        commit(types.RECEIVE_ADMIN_NAME, '');
+                        sessionStorage.clear()
                         localStorage.clear()
                     }
                     resolve();
@@ -119,13 +125,15 @@ const actions = {
     },
 
     // 前端 登出
-    fedLogout({
+    fedLogout ({
         commit
     }) {
         return new Promise(resolve => {
             commit(types.RECEIVE_ADMIN_ID, "");
             commit(types.RECEIVE_ADMIN_TOKEN, "");
             commit(types.RECEIVE_ADMIN_AUTH_RULES, []);
+            commit(types.RECEIVE_ADMIN_NAME, '');
+            sessionStorage.clear()
             resolve();
         });
     },
@@ -135,7 +143,7 @@ const actions = {
      * @param data
      * @returns {Promise}
      */
-    filterRouter({
+    filterRouter ({
         commit
     }, data) {
         const {
@@ -149,7 +157,7 @@ const actions = {
 
 // mutations
 const mutations = {
-    [types.RECEIVE_ADMIN_ID](state, adminId) {
+    [types.RECEIVE_ADMIN_ID] (state, adminId) {
         state.adminId = adminId;
         if (adminId === "") {
             removeAdminId();
@@ -157,7 +165,7 @@ const mutations = {
             setAdminId(adminId);
         }
     },
-    [types.RECEIVE_ADMIN_TOKEN](state, token) {
+    [types.RECEIVE_ADMIN_TOKEN] (state, token) {
         state.token = token;
         if (token === "") {
             removeToken();
@@ -165,20 +173,20 @@ const mutations = {
             setToken(token);
         }
     },
-    [types.RECEIVE_ADMIN_NAME](state, userName) {
+    [types.RECEIVE_ADMIN_NAME] (state, userName) {
         state.userName = userName;
     },
-    [types.RECEIVE_ADMIN_AVATAR](state, avatar) {
+    [types.RECEIVE_ADMIN_AVATAR] (state, avatar) {
         state.avatar = avatar;
     },
-    [types.RECEIVE_ADMIN_AUTH_RULES](state, authRules) {
+    [types.RECEIVE_ADMIN_AUTH_RULES] (state, authRules) {
         state.authRules = authRules;
     },
-    [types.RECEIVE_ROUTERS](state, routers) {
+    [types.RECEIVE_ROUTERS] (state, routers) {
         const tempRm = constantRouterMap.concat(routers);
         state.routers = JSON.parse(JSON.stringify(tempRm));
     },
-    [types.RECEIVE_ADMIN](state, is_wmadmin) {
+    [types.RECEIVE_ADMIN] (state, is_wmadmin) {
         state.is_wmadmin = is_wmadmin
     }
 };

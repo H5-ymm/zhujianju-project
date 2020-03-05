@@ -123,6 +123,20 @@ input {
       text-align: left;
     }
   }
+  .detail-view {
+    .el-form-item__label {
+      text-align: left!important;
+    }
+    .qrcode-box {
+      .qrcode-img {
+        width: 40px;
+        height: 40px;
+      }
+    }
+    .form-dialog {
+      padding-left: 80px!important;
+    }
+  }
 }
 
 .container-left {
@@ -235,10 +249,6 @@ input {
 .form-dialog {
   .width240 {
     width: 240px !important;
-  }
-
-  .width240 {
-    width: 280px !important;
   }
 }
 

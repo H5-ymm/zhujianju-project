@@ -140,10 +140,22 @@ export const manageRouter = [{
     }]
 },
 ]
+
 export const workerRouter = [{
     path: "/readme",
     component: Home,
-    redirect: "/readme/staffManage",
+    redirect: "/readme/projectDetail",
+    icon: "xiangmuxiangqing",
+    name: "项目详情",
+    noDropdown: true,
+    children: [{
+        path: 'projectDetail',
+        component: projectDetail
+    }]
+}, {
+    path: "/staffManage",
+    component: Home,
+    redirect: "/readme/projectDetail",
     icon: "gongren",
     name: "工人管理",
     noDropdown: true,
@@ -151,7 +163,7 @@ export const workerRouter = [{
         path: 'staffManage',
         component: staffManage
     }]
-},]
+}]
 export default new VueRouter({
     // mode: 'history', //后端支持可开
     mode: ROUTER_MODE,

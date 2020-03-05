@@ -1,31 +1,14 @@
 <template>
     <el-container class="wrapper">
-        <el-scrollbar
-            class="container-left"
-            wrap-class="container-left-wrap"
-            :class="{'slide-hide': isCollapse, 'slide-in-left': menuShow}"
-        >
+        <el-scrollbar class="container-left" wrap-class="container-left-wrap" :class="{'slide-hide': isCollapse, 'slide-in-left': menuShow}">
             <div class="logo">
                 <span>泾川县建设工程监管平台</span>
             </div>
-            <el-menu
-                class="menu"
-                :default-active="onRoutes"
-                :collapse="isCollapse"
-                style="border: none;"
-                text-color="rgb(191, 203, 217)"
-                background-color="rgb(48, 65, 86)"
-                active-text-color="rgb(64, 158, 255)"
-                unique-opened
-                router
-            >
+            <el-menu class="menu" :default-active="onRoutes" :collapse="isCollapse" style="border: none;" text-color="rgb(191, 203, 217)" background-color="rgb(48, 65, 86)" active-text-color="rgb(64, 158, 255)" unique-opened router>
                 <sidebar-item v-for="item in routers" :key="item.path" :item="item"></sidebar-item>
             </el-menu>
         </el-scrollbar>
-        <el-container
-            class="container-box"
-            v-bind:class="{'slide-hide': isCollapse, 'slide-in-left': menuShow}"
-        >
+        <el-container class="container-box" v-bind:class="{'slide-hide': isCollapse, 'slide-in-left': menuShow}">
             <el-header class="header">
                 <div class="header-left">
                     <div class="header-toggle" @click="menuShow = !menuShow; showSideBar()">
@@ -33,11 +16,7 @@
                         <span></span>
                         <span></span>
                     </div>
-                    <div
-                        class="slide-toggle"
-                        :class="{'slide-toggle-open': isCollapse}"
-                        @click="toggleSideBar"
-                    >
+                    <div class="slide-toggle" :class="{'slide-toggle-open': isCollapse}" @click="toggleSideBar">
                         <span></span>
                         <span></span>
                         <span></span>
@@ -46,10 +25,7 @@
                 <div class="header-tabs-box">
                     <el-breadcrumb class="app-levelbar" separator="/">
                         <el-breadcrumb-item v-for="(item,index)  in levelList" :key="item.path">
-                            <span
-                                v-if="item.redirect==='noredirect'||index==levelList.length-1"
-                                class="no-redirect"
-                            >{{item.name}}</span>
+                            <span v-if="item.redirect==='noredirect'||index==levelList.length-1" class="no-redirect">{{item.name}}</span>
                             <router-link v-else :to="item.redirect||item.path">{{item.name}}</router-link>
                         </el-breadcrumb-item>
                     </el-breadcrumb>
@@ -70,44 +46,6 @@
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
-                <!--新增界面-->
-                <el-dialog title="修改密码" :visible.sync="passwordFormVisible" width="85%" top="5vh">
-                    <el-form
-                        :model="passwordFormData"
-                        :rules="passwordFormDataRules"
-                        ref="passwordFormData"
-                    >
-                        <el-form-item label="原始密码" prop="old_password">
-                            <el-input
-                                type="password"
-                                v-model="passwordFormData.old_password"
-                                auto-complete="off"
-                            ></el-input>
-                        </el-form-item>
-                        <el-form-item label="新密码" prop="new_password">
-                            <el-input
-                                type="password"
-                                v-model="passwordFormData.new_password"
-                                auto-complete="off"
-                            ></el-input>
-                        </el-form-item>
-                        <el-form-item label="确认密码" prop="check_new_password">
-                            <el-input
-                                type="password"
-                                v-model="passwordFormData.check_new_password"
-                                auto-complete="off"
-                            ></el-input>
-                        </el-form-item>
-                    </el-form>
-                    <div slot="footer" class="dialog-footer">
-                        <el-button @click.native="passwordFormVisible = !passwordFormVisible">取消</el-button>
-                        <el-button
-                            type="primary"
-                            @click.native="addSubmit('passwordFormData')"
-                            :loading="passwordLoading"
-                        >提交</el-button>
-                    </div>
-                </el-dialog>
             </el-header>
             <!--遮板-->
             <div class="main-mask" v-show="menuShow" @click="menuShow = !menuShow"></div>
@@ -127,7 +65,7 @@ import SidebarItem from "./SidebarItem.vue";
 import { password } from "../../api/auth/login";
 import { getAdminId, getToken } from "../../utils/auth";
 export default {
-    data() {
+    data () {
         let validatePass = (rule, value, callback) => {
             if (value === "") {
                 callback(new Error("请输入密码"));
@@ -193,26 +131,26 @@ export default {
         ...mapGetters({
             routers: "routers"
         }),
-        onRoutes() {
+        onRoutes () {
             return this.$route.path;
         },
-        username() {
+        username () {
             let username = this.$store.state.admin.userName;
             return !username ? this.name : username;
         },
-        isCollapse() {
+        isCollapse () {
             return this.$store.state.app.sidebar.opened;
         }
     },
-    mounted() { },
+    mounted () { },
     methods: {
-        toggleSideBar() {
+        toggleSideBar () {
             this.$store.dispatch("ToggleSideBar");
         },
-        showSideBar() {
+        showSideBar () {
             this.$store.dispatch("ShowSideBar");
         },
-        getBreadcrumb() {
+        getBreadcrumb () {
             let matched = this.$route.matched.filter(item => item.name);
             const first = matched[0];
             if (first && (first.name !== "首页" || first.path !== "")) {
@@ -220,7 +158,7 @@ export default {
             }
             this.levelList = matched;
         },
-        handleCommand() {
+        handleCommand () {
             this.$confirm("此操作将退出系统, 是否继续?", "提示", {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",
@@ -228,7 +166,9 @@ export default {
             })
                 .then(() => {
                     this.$store.dispatch("loginOut").then(() => {
-                        location.reload(); // 为了重新实例化vue-router对象 避免bug
+                        this.$message.success('退出登录成功')
+                        this.$router.replace('/login')
+                        // location.reload(); // 为了重新实例化vue-router对象 避免bug
                     });
                 })
                 .catch(() => {
@@ -239,56 +179,20 @@ export default {
                 });
         },
         // 显示修改密码界面
-        handlePassword() {
+        handlePassword () {
             this.passwordFormVisible = true;
             this.passwordFormData = {
                 old_password: "",
                 new_password: "",
                 check_new_password: ""
             };
-        },
-        addSubmit(formName) {
-            this.$refs[formName].validate(valid => {
-                if (valid) {
-                    this.passwordLoading = true;
-                    let data = Object.assign({}, this.passwordFormData);
-                    data.adminId = getAdminId();
-                    password(data)
-                        .then(res => {
-                            this.passwordLoading = false;
-                            if (res.code) {
-                                this.$message({
-                                    message: res.message,
-                                    type: "error"
-                                });
-                            } else {
-                                this.$message({
-                                    message: "修改成功",
-                                    type: "success"
-                                });
-                                // 刷新表单
-                                this.$refs["passwordFormData"].resetFields();
-                                this.passwordFormVisible = false;
-                                this.$store.dispatch("loginOut").then(() => {
-
-                                });
-                            }
-                        })
-                        .catch(() => {
-                            this.$message({
-                                type: "error",
-                                message: "操作失败"
-                            });
-                        });
-                }
-            });
         }
     },
-    created() {
+    created () {
         this.getBreadcrumb();
     },
     watch: {
-        $route() {
+        $route () {
             this.getBreadcrumb();
         }
     }

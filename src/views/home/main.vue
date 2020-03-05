@@ -5,11 +5,11 @@
       <el-form-item class="query-form-item">
         <el-input v-model="query.keyword" class="width200" placeholder="工程名称"></el-input>
       </el-form-item>
-        <el-form-item>
+      <el-form-item>
         <el-select v-model="query.com_id" class="width300" placeholder="请选择公司名称">
           <el-option v-for="item in options" :key="item.id" :label="item.com_name" :value="item.id"></el-option>
         </el-select>
-      </el-form-item>    
+      </el-form-item>
       <el-form-item>
         <el-select v-model="query.type" class="width200" placeholder="请选择项目类别">
           <el-option v-for="item in projectType" :key="item.id" :label="item.name" :value="item.id"></el-option>
@@ -34,12 +34,6 @@
       </template>
     </vue-easy-print>
     <el-table v-loading="loading" :data="list" show-summary style="width: 100%;" class="common-table" max-height="1000px">
-      <el-table-column label="二维码" align="center">
-        <template slot-scope="scope">
-          <img :src="getImg(scope.row.qrcode)" v-if="scope.row.qrcode" class="qrcode" alt="">
-          <span v-else class="qrcode-status">未生成</span>
-        </template>
-      </el-table-column>
       <el-table-column label="工程名称" prop="name" align="center" width="90px"></el-table-column>
       <el-table-column label="工程地点" align="center" width="90px">
         <template slot-scope="scope">
@@ -49,23 +43,31 @@
       <el-table-column label="项目类别" prop="type" align="center" width="90px"></el-table-column>
       <el-table-column label="建筑规模" prop="scale" align="center" width="100px"></el-table-column>
       <el-table-column label="工程造价" prop="engineering_cost" align="center" width="100px"></el-table-column>
-      <el-table-column label="施工许可证号" prop="make_license" width="110px" align="center"></el-table-column>
+      <el-table-column label="施工许可证号" width="110px" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.make_license + ''}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="结构类型" prop="structure_type" align="center" width="100px"></el-table-column>
-      <el-table-column label="监督注册号" prop="monitoring_id" align="center" width="100px"></el-table-column>
+      <el-table-column label="监督注册号" align="center" width="100px">
+        <template slot-scope="scope">
+          <span>{{scope.row.monitoring_id + ''}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="建设单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
           <p>{{scope.row.construction_unit}}</p>
           <el-button type="text">{{scope.row.survey_user}}</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="勘查单位及项目负责人"  width="100px" align="center">
+      <el-table-column label="勘查单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
           <p>{{scope.row.survey_unit}}</p>
           <el-button type="text">{{scope.row.survey_user}}</el-button>
         </template>
       </el-table-column>
       <el-table-column label="设计单位及项目负责人" width="100px" align="center">
-         <template slot-scope="scope">
+        <template slot-scope="scope">
           <p>{{scope.row.design_unit}}</p>
           <el-button type="text">{{scope.row.design_user}}</el-button>
         </template>
@@ -77,15 +79,15 @@
         </template>
       </el-table-column>
       <el-table-column label="监理单位及项目负责人" width="100px" align="center">
-         <template slot-scope="scope">
+        <template slot-scope="scope">
           <p>{{scope.row.supervision_unit}}</p>
           <el-button type="text">{{scope.row.supervision_user}}</el-button>
         </template>
       </el-table-column>
       <el-table-column label="检测单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-           <p>{{scope.row.detection_unit}}</p>
-           <el-button type="text">{{scope.row.detection_user}}</el-button>
+          <p>{{scope.row.detection_unit}}</p>
+          <el-button type="text">{{scope.row.detection_user}}</el-button>
         </template>
       </el-table-column>
       <el-table-column label="商砼单位及项目负责人" width="100px" align="center">
@@ -94,7 +96,11 @@
           <el-button type="text">{{scope.row.commercialconcrete_unit}}</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="监督组" prop="monitoring_group" align="center"></el-table-column>
+      <el-table-column label="监督组" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.monitoring_group + ''}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="计划竣工日期" align="center" width="110px">
         <template slot-scope="scope">
           <span>
@@ -106,6 +112,12 @@
       <el-table-column label="层数" align="center">
         <template slot-scope="scope">
           <span>{{scope.row.layers}}层</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="二维码" align="center">
+        <template slot-scope="scope">
+          <img :src="getImg(scope.row.qrcode)" v-if="scope.row.qrcode" class="qrcode" alt="">
+          <span v-else class="qrcode-status">未生成</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="100px">
@@ -255,7 +267,7 @@
             <el-input placeholder="请输入商砼单位负责人" v-model="formData.commercialconcrete_user" auto-complete="off"></el-input>
           </div>
         </el-form-item>
-        
+
         <el-form-item label="监督组" prop="monitoring_group">
           <el-input class="width240" placeholder="请输入监督组负责人" v-model="formData.monitoring_group" auto-complete="off"></el-input>
         </el-form-item>
@@ -319,7 +331,7 @@ export default {
     printDemo: printDemo,
     vueEasyPrint: vueEasyPrint
   },
-  data() {
+  data () {
     let validatereg = (rule, value, callback) => {
       if (value === '') {
         callback()
@@ -428,18 +440,18 @@ export default {
     };
   },
   computed: {
-    tableData() {
+    tableData () {
       return { store_name: 'ceshi', detail: this.list }
     }
   },
   methods: {
     getImg,
-    districtChange(val) {
+    districtChange (val) {
       this.formData.provinceid = val[0]
       this.formData.cityid = val[1]
       this.formData.areaid = val[2]
     },
-    getCompany() {
+    getCompany () {
       let params = {
         keyword: ''
       }
@@ -447,7 +459,7 @@ export default {
         this.options = res || []
       })
     },
-    getType(pid) {
+    getType (pid) {
       let params = {
         pid: pid,
         keyword: ''
@@ -460,13 +472,13 @@ export default {
         })
       })
     },
-    printView() {
+    printView () {
       this.$refs.easyPrint.print()
     },
-    viewDetail(index, row) {
+    viewDetail (index, row) {
       this.$router.push('projectDetail?id=' + row.id)
     },
-    onReset() {
+    onReset () {
       this.$router.push({
         path: ""
       });
@@ -477,18 +489,18 @@ export default {
       };
       this.getList();
     },
-    onSubmit() {
+    onSubmit () {
       this.$router.push({
         path: "",
         query: this.query
       });
       this.getList();
     },
-    handleCurrentChange(val) {
+    handleCurrentChange (val) {
       this.query.page = val;
       this.getList();
     },
-    getList() {
+    getList () {
       this.loading = true;
       getProjectList(this.query)
         .then(response => {
@@ -503,7 +515,7 @@ export default {
           this.roles = [];
         });
     },
-    getRoleList() {
+    getRoleList () {
       authAdminRoleList(this.query)
         .then(response => {
           this.roles = response.data.list || [];
@@ -513,7 +525,7 @@ export default {
         });
     },
     // 刷新表单
-    resetForm() {
+    resetForm () {
       if (this.$refs["dataForm"]) {
         // 清空验证信息表单
         this.$refs["dataForm"].clearValidate();
@@ -522,7 +534,7 @@ export default {
       }
     },
     // 隐藏表单
-    hideForm() {
+    hideForm () {
       // 更改值
       this.formVisible = !this.formVisible;
       // 清空表单
@@ -530,7 +542,7 @@ export default {
       return true;
     },
     // 显示表单
-    handleForm(index, row) {
+    handleForm (index, row) {
       this.formVisible = true;
       this.formData = JSON.parse(JSON.stringify(formJson));
       if (row !== null) {
@@ -545,7 +557,7 @@ export default {
         this.formRules = this.addRules;
       }
     },
-    getProjectDetail(id) {
+    getProjectDetail (id) {
       getDetail({ id }).then(res => {
         this.formData = res || {}
         this.formData.structure_type = Number(this.formData.structure_type)
@@ -559,7 +571,7 @@ export default {
         }
       })
     },
-    editProject(data) {
+    editProject (data) {
       updateProject(data).then(response => {
         if (response) {
           this.formLoading = false;
@@ -571,7 +583,7 @@ export default {
         }
       });
     },
-    formSubmit() {
+    formSubmit () {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
           if (!this.formData.provinceid) {
@@ -621,7 +633,7 @@ export default {
       });
     },
     // 删除
-    handleDel(index, row) {
+    handleDel (index, row) {
       if (row.id) {
         this.$confirm("确认删除该项目吗?", "提示", {
           type: "warning"
@@ -650,7 +662,7 @@ export default {
       }
     }
   },
-  created() {
+  created () {
     // 将参数拷贝进查询对象
     let query = this.$route.query;
     this.query = Object.assign(this.query, query);

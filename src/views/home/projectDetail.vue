@@ -1,9 +1,13 @@
 <template>
 	<el-row :gutter="10" class="detail-view">
+		<div class="qrcode-box">
+			<p class="qrcode-title">项目二维码</p>
+			<img :src="getImg(formData.qrcode)" alt="" class="qrcode-img">
+		</div>
 		<el-col>
 			<div class="grid-content bg-purple form-dialog">
 				<el-form :model="formData" :inline="true" label-width="150px" label-position="right" class="form" ref="dataForm">
-					<el-form-item label="用户名" prop="username">
+					<el-form-item label="用户名" v-if="id">
 						<el-input readonly v-model="formData.username" class="width240"></el-input>
 					</el-form-item>
 					<el-form-item label="工程名称">
@@ -12,9 +16,9 @@
 					<el-form-item label="项目类别">
 						<el-input v-model="formData.type_name" class="width240" readonly></el-input>
 					</el-form-item>
-					<el-form-item label="工程地点" required>
+					<el-form-item label="工程地点">
 						<div class="width240 select-input">
-							<el-input v-model="formData.address" readonly></el-input>
+							<el-input v-model="address" readonly></el-input>
 						</div>
 						<el-input v-model="formData.address" class="width240" readonly></el-input>
 					</el-form-item>
@@ -31,10 +35,10 @@
 						<el-input class="width240" v-model="formData.engineering_cost" readonly></el-input>
 					</el-form-item>
 					<el-form-item label="计划开工日期">
-						<el-input class="width240" v-model="$moment.unix(formData.starttime).format('YYYY-MM-DD HH:mm')" readonly></el-input>
+						<el-input class="width240" v-model="$moment.unix(formData.starttime).format('YYYY-MM-DD')" readonly></el-input>
 					</el-form-item>
 					<el-form-item label="计划竣工日期">
-						<el-input class="width240" v-model="$moment.unix(formData.endtime).format('YYYY-MM-DD HH:mm')" readonly></el-input>
+						<el-input class="width240" v-model="$moment.unix(formData.endtime).format('YYYY-MM-DD')" readonly></el-input>
 					</el-form-item>
 					<el-form-item label="建筑工程规划许可证">
 						<el-input class="width240" v-model="formData.license" readonly></el-input>
@@ -53,7 +57,7 @@
 					</el-form-item>
 					<el-form-item label="建设单位">
 						<div class="width240">
-							<el-input class="width240 select-input" v-model="formData.construction_user.com_name" readonly></el-input>
+							<el-input class="width240 select-input" v-model="formData.construction_info.com_name" readonly></el-input>
 							<el-input class="width240 select-input" v-model="formData.construction_info.corporation_name" readonly></el-input>
 							<el-input v-model="formData.construction_user" readonly></el-input>
 						</div>
@@ -79,24 +83,24 @@
 							<el-input v-model="formData.shigong_user" readonly></el-input>
 						</div>
 					</el-form-item>
-					<el-form-item prop="supervision_unit" label="监理单位">
+					<el-form-item label="监理单位">
 						<div class="width240">
 							<el-input class="width240 select-input" v-model="formData.supervision_info.com_name" readonly></el-input>
 							<el-input class="width240 select-input" v-model="formData.supervision_info.corporation_name" readonly></el-input>
 							<el-input v-model="formData.supervision_user" readonly></el-input>
 						</div>
 					</el-form-item>
-					<el-form-item prop="detection_unit" label="检测单位">
+					<el-form-item label="检测单位">
 						<div class="width240">
 							<el-input class="width240 select-input" v-model="formData.detection_info.com_name" readonly></el-input>
 							<el-input class="width240 select-input" v-model="formData.detection_info.corporation_name" readonly></el-input>
 							<el-input v-model="formData.detection_user" readonly></el-input>
 						</div>
 					</el-form-item>
-					<el-form-item prop="detection_unit" label="商砼单位">
-						<div class="width240" v-if="formData.commercialconcrete_info">
+					<el-form-item label="商砼单位">
+						<div class="width240">
 							<el-input class="width240 
-							select-input"v-model="formData.commercialconcrete_info.com_name" readonly></el-input>
+							select-input" v-model="formData.commercialconcrete_info.com_name" readonly></el-input>
 							<el-input class="width240 select-input" v-model="formData.commercialconcrete_info.corporation_name" readonly></el-input>
 							<el-input v-model="formData.commercialconcrete_user" readonly></el-input>
 						</div>
@@ -111,8 +115,10 @@
 </template>
 <script>
 import { getDetail } from "../../api/project/index";
+import { getIteminfo } from "../../api/workman/index";
+import { getImg } from '../../utils/util.js'
 export default {
-	data() {
+	data () {
 		return {
 			formData: {
 				survey_info: {},
@@ -120,31 +126,83 @@ export default {
 				design_info: {},
 				shigong_info: {},
 				supervision_info: {},
-				detection_info: {}
+				detection_info: {},
+				commercialconcrete_info: {}
 			},
 			id: ''
 		}
 	},
 	computed: {
-		address() {
+		address () {
 			return this.formData.province + this.formData.city + this.formData.area
 		}
 	},
-	created() {
-		this.id = this.$route.query.id
-		this.getProject(this.id)
+	created () {
+		if (this.$route.query.id) {
+			this.id = this.$route.query.id
+			this.getProject(this.id)
+		} else {
+			this.getProjectDetail()
+		}
 	},
 	methods: {
-		getProject(id) {
+		getImg,
+		getProject (id) {
 			getDetail({ id }).then(res => {
-				this.formData = res
+				this.getDetailInfo(res)
 			})
+		},
+		// 工人管理账户项目详情
+		getProjectDetail () {
+			getIteminfo().then(res => {
+				this.getDetailInfo(res)
+			})
+		},
+		getDetailInfo (data) {
+			if (data) {
+				this.formData = data
+				if (!data.commercialconcrete_info) {
+					this.formData.commercialconcrete_info = {}
+				}
+			} else {
+				this.formData = {
+					starttime: '',
+					endtime: '',
+					survey_info: {},
+					construction_info: {},
+					design_info: {},
+					shigong_info: {},
+					supervision_info: {},
+					detection_info: {},
+					commercialconcrete_info: {}
+				}
+			}
+
 		}
 	}
 }
 </script>
 <style lang="scss">
 .detail-view {
+	position: relative;
+	.qrcode-box {
+		position: absolute;
+		left:0;
+		top: 0;
+		text-align: center;
+		.qrcode-title {
+			margin-bottom: 5px;
+			color: #333;
+		}
+		.qrcode-img {
+			height: 80px;
+			width: 80px;
+		}
+	}
+	.form-dialog {
+		padding-left: 30px;
+		margin-top: 20px;
+	}
   .select-input {
     margin-bottom: 5px;
   }

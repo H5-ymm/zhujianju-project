@@ -14,7 +14,7 @@ import {
     asyncRouterMap
 } from "./router/index";
 // permissiom judge
-function hasRole(authRules, permissionAuthRules) {
+function hasRole (authRules, permissionAuthRules) {
     if (!authRules || authRules.length <= 0) {
         return false;
     }
@@ -28,7 +28,7 @@ function hasRole(authRules, permissionAuthRules) {
  * @param authRules
  * @param route
  */
-function hasRouterRole(authRules, route) {
+function hasRouterRole (authRules, route) {
     if (
         authRules.indexOf("admin") >= 0 ||
         !route.meta ||
@@ -41,7 +41,7 @@ function hasRouterRole(authRules, route) {
     );
 }
 
-function hasRouterStaff(authRules, route) {
+function hasRouterStaff (authRules, route) {
     if (
         authRules.indexOf("staff") >= 0 ||
         !route.meta ||
@@ -58,7 +58,7 @@ function hasRouterStaff(authRules, route) {
  * @param asyncRouterMap
  * @param authRules
  */
-function filterAsyncRouter(asyncRouterMap, authRules) {
+function filterAsyncRouter (asyncRouterMap, authRules) {
     const accessedRouters = asyncRouterMap.filter(route => {
         if (hasRouterRole(authRules, route)) {
             if (route.children && route.children.length) {
@@ -71,7 +71,7 @@ function filterAsyncRouter(asyncRouterMap, authRules) {
     return accessedRouters;
 }
 
-function filterAsyncRouter1(workerRouter, authRules) {
+function filterAsyncRouter1 (workerRouter, authRules) {
     const accessedRouters = workerRouter.filter(route => {
         if (hasRouterStaff(authRules, route)) {
             if (route.children && route.children.length) {
@@ -102,10 +102,15 @@ router.beforeEach((to, from, next) => {
             NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
             return;
         }
-        if (
-            !store.getters.userName &&
-            (!store.getters.authRules || store.getters.authRules.length === 0)
-        ) {
+        // if (
+        //     !store.getters.userName && sessionStorage.getItem('is_wmadmin') != 'undefined' &&
+        //     (!store.getters.authRules || store.getters.authRules.length === 0)
+        // ) {
+
+        console.log(store.getters.userName)
+        console.log(!store.getters.authRules)
+        if (!store.getters.userName &&
+            (!store.getters.authRules || store.getters.authRules.length === 0)) {
             // 判断当前用户是否已拉取完用户信息
             store
                 .dispatch("userInfo")
@@ -142,9 +147,9 @@ router.beforeEach((to, from, next) => {
                     // hack方法 确保addRoutes已完成
                     // 设置左边导航栏
                     store.dispatch("filterRouter", {
-                            accessedRouters
-                        })
-                        .then(() => {});
+                        accessedRouters
+                    })
+                        .then(() => { });
                 })
                 .catch(() => {
                     store.dispatch("fedLogout").then(() => {
