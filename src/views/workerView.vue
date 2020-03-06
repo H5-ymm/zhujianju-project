@@ -1,17 +1,18 @@
 <template>
 	<div class="worker-view">
-		  <p class="projectName" v-if="projectName">项目名称：{{projectName}}</p>
-			<el-form :model="formData" 
-			class="tel-form form" :inline="true" label-width="120px"  v-if="step==1" label-position="right" :rules="rules" ref="telForm">
-				<el-form-item label="手机号" prop="tel">
-					<el-input class="width220"  placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
-				</el-form-item>
-				<div class="btn-box">
-					<el-button type="primary"  class="submit-btn" @click.native="submitTel">确定</el-button>
-				</div>
+		<div class="worker-header">
+			<p class="title">泾川县建设工程监管平台</p>
+		</div>
+		<p class="projectName" v-if="projectName">项目名称：{{projectName}}</p>
+		<el-form :model="formData" class="tel-form form" :inline="true" label-width="120px" v-if="step==1" label-position="right" :rules="rules" ref="telForm">
+			<el-form-item label="手机号" prop="tel">
+				<el-input class="width220" placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
+			</el-form-item>
+			<div class="btn-box">
+				<el-button type="primary" class="submit-btn" @click.native="submitTel">确定</el-button>
+			</div>
 		</el-form>
-		<el-form :model="formData" :inline="true" label-width="120px" v-else 
-		label-position="right" class="form" :rules="formRules" ref="dataForm">
+		<el-form :model="formData" :inline="true" label-width="120px" v-else label-position="right" class="form" :rules="formRules" ref="dataForm">
 			<el-form-item label="手机号">
 				<el-input class="width220" readonly placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
 			</el-form-item>
@@ -57,8 +58,7 @@
 					{{!readonly?'注册':'加入项目'}}</el-button>
 			</div>
 			<div class="btn-box" v-if="bindProject&&id">
-				<el-button type="primary" class="submit-btn" :disabled="isSign" 
-				 @click.native="setSign">{{!isSign?'签到':'已签到'}}</el-button>
+				<el-button type="primary" class="submit-btn" :disabled="isSign" @click.native="setSign">{{!isSign?'签到':'已签到'}}</el-button>
 				<el-button type="primary" class="submit-btn" @click.native="addTemp">添加体温</el-button>
 			</div>
 		</el-form>
@@ -90,7 +90,7 @@ export default {
 	components: {
 		selectCity: selectCity
 	},
-	data() {
+	data () {
 		let validatereg = (rule, value, callback) => {
 			//验证用户名是否合法
 			let reg = /^1[3456789]\d{9}$/
@@ -163,7 +163,7 @@ export default {
 			isSign: false
 		}
 	},
-	created() {
+	created () {
 		let state = getQueryString('state')
 		if (state) {
 			this.item_id = state.split('#')[0]
@@ -179,15 +179,15 @@ export default {
 		})
 	},
 	methods: {
-		getName() {
+		getName () {
 			getitemname({ item_id: this.item_id }).then(res => {
 				this.projectName = res
 			})
 		},
-		handleClose() {
+		handleClose () {
 			this.dialogVisible = false
 		},
-		submitTel() {
+		submitTel () {
 			this.$refs["telForm"].validate(valid => {
 				if (valid) {
 					let params = {
@@ -198,13 +198,13 @@ export default {
 				}
 			})
 		},
-		resetFormTel() {
+		resetFormTel () {
 			if (this.$refs["telForm"]) {
 				this.$refs["telForm"].clearValidate();
 				this.$refs["telForm"].resetFields();
 			}
 		},
-		byTelGetInfo(params) {
+		byTelGetInfo (params) {
 			getWxworkmanbytel(params).then(res => {
 				if (res && res.id) {
 					this.id = res.id || ''
@@ -231,10 +231,10 @@ export default {
 				this.step = 2
 			})
 		},
-		addTemp() {
+		addTemp () {
 			this.dialogVisible = true
 		},
-		setSign() {
+		setSign () {
 			let params = {
 				workman_id: this.id || this.formData.id,
 				item_id: this.item_id
@@ -249,7 +249,7 @@ export default {
 				}
 			})
 		},
-		handleOk(temperature) {
+		handleOk (temperature) {
 			if (!this.temperature) {
 				return this.$message.warning('请输入体温')
 			}
@@ -268,12 +268,12 @@ export default {
 				}
 			})
 		},
-		districtChange(val) {
+		districtChange (val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]
 			this.formData.areaid = val[2]
 		},
-		getType(pid) {
+		getType (pid) {
 			let params = {
 				pid,
 				keyword: ''
@@ -284,13 +284,13 @@ export default {
 				})
 			})
 		},
-		resetForm() {
+		resetForm () {
 			if (this.$refs["dataForm"]) {
 				this.$refs["dataForm"].clearValidate();
 				this.$refs["dataForm"].resetFields();
 			}
 		},
-		bindWorkProject() {
+		bindWorkProject () {
 			let params = {
 				item_id: this.item_id,
 				id: this.id
@@ -305,7 +305,7 @@ export default {
 				}
 			});
 		},
-		addWorkBind(params) {
+		addWorkBind (params) {
 			addWork(params).then(response => {
 				if (response) {
 					this.id = response
@@ -321,7 +321,7 @@ export default {
 				this.resetForm();
 			})
 		},
-		formSubmit() {
+		formSubmit () {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					if (this.readonly && !this.bindProject) {
@@ -339,11 +339,24 @@ export default {
 </script>
 <style lang="scss">
 .worker-view {
-  margin: 20px auto 10px;
-  padding-bottom: 30px;
+  margin: 0 auto 10px;
+	padding-bottom: 30px;
   width: 100%;
-  overflow: auto;
-  height: 100%;
+  overflow-y: auto;
+	overflow-x: hidden;
+	height: 100%;
+	.worker-header {
+		height: 110px;
+		width: 100%;
+		background: url('../assets/image/bg.jpg') no-repeat center bottom;
+		background-size: 100%;
+		position: relative;
+		.title {
+			color: #fff;
+			font-size: 20px;
+			padding: 20px;
+		}
+	}
   .projectName {
     color: #333;
     font-weight: bold;
