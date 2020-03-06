@@ -56,44 +56,58 @@
       </el-table-column>
       <el-table-column label="建设单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.construction_unit}}</p>
-          <el-button type="text">{{scope.row.survey_user}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.construction_unit}}</p>
+            <el-button type="text">{{scope.row.survey_user}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="勘查单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.survey_unit}}</p>
-          <el-button type="text">{{scope.row.survey_user}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.survey_unit}}</p>
+            <el-button type="text">{{scope.row.survey_user}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="设计单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.design_unit}}</p>
-          <el-button type="text">{{scope.row.design_user}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.design_unit}}</p>
+            <el-button type="text">{{scope.row.design_user}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="施工单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.shigong_unit}}</p>
-          <el-button type="text">{{scope.row.shigong_user}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.shigong_unit}}</p>
+            <el-button type="text">{{scope.row.shigong_user}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="监理单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.supervision_unit}}</p>
-          <el-button type="text">{{scope.row.supervision_user}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.supervision_unit}}</p>
+            <el-button type="text">{{scope.row.supervision_user}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="检测单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.detection_unit}}</p>
-          <el-button type="text">{{scope.row.detection_user}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.detection_unit}}</p>
+            <el-button type="text">{{scope.row.detection_user}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="商砼单位及项目负责人" width="100px" align="center">
         <template slot-scope="scope">
-          <p>{{scope.row.commercialconcrete_unit}}</p>
-          <el-button type="text">{{scope.row.commercialconcrete_unit}}</el-button>
+          <div class="cell-item">
+            <p>{{scope.row.commercialconcrete_unit}}</p>
+            <el-button type="text">{{scope.row.commercialconcrete_unit}}</el-button>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="监督组" align="center">
@@ -685,6 +699,13 @@ export default {
 <style lang="scss">
 .select-input {
   margin-bottom: 5px;
+}
+.cell-item {
+  text-align: center;
+  .el-button {
+    padding: 0 10px;
+    white-space:normal;
+  }
 }
 .date-item {
   .el-input--prefix {
