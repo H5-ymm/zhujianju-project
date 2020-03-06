@@ -33,7 +33,14 @@
         <printDemo :list="list"></printDemo>
       </template>
     </vue-easy-print>
-    <el-table v-loading="loading" :data="list" show-summary style="width: 100%;" class="common-table" max-height="1000px">
+    <el-table
+      v-loading="loading"
+      :data="list"
+      show-summary
+      style="width: 100%;"
+      class="common-table"
+      max-height="1000px"
+    >
       <el-table-column label="工程名称" prop="name" align="center" width="90px"></el-table-column>
       <el-table-column label="工程地点" align="center" width="90px">
         <template slot-scope="scope">
@@ -106,7 +113,7 @@
         <template slot-scope="scope">
           <div class="cell-item">
             <p>{{scope.row.commercialconcrete_unit}}</p>
-            <el-button type="text">{{scope.row.commercialconcrete_unit}}</el-button>
+            <el-button type="text">{{scope.row.commercialconcrete_user}}</el-button>
           </div>
         </template>
       </el-table-column>
@@ -142,31 +149,77 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination :page-size="query.limit" @current-change="handleCurrentChange" layout="prev, pager, next,total" :total="total"></el-pagination>
+    <el-pagination
+      :page-size="query.limit"
+      @current-change="handleCurrentChange"
+      layout="prev, pager, next,total"
+      :total="total"
+    ></el-pagination>
     <!--表单-->
-
-    <el-dialog :title="formMap[formName]" :visible.sync="formVisible" :before-close="hideForm" width="66%" top="5vh" class="form-dialog">
-      <el-form :model="formData" :inline="true" label-width="150px" label-position="right" class="form" :rules="addRules" ref="dataForm">
+    <el-dialog
+      :title="formMap[formName]"
+      :visible.sync="formVisible"
+      :before-close="hideForm"
+      width="66%"
+      top="5vh"
+      class="form-dialog"
+    >
+      <el-form
+        :model="formData"
+        :inline="true"
+        label-width="150px"
+        label-position="right"
+        class="form"
+        :rules="addRules"
+        ref="dataForm"
+      >
         <el-form-item label="用户名" prop="username">
-          <el-input :readonly="formMap[formName]=='编辑'" v-model="formData.username" placeholder="请输入用户名" class="width240" auto-complete="off"></el-input>
+          <el-input
+            :readonly="formMap[formName]=='编辑'"
+            v-model="formData.username"
+            placeholder="请输入用户名"
+            class="width240"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="密码" v-if="formMap[formName]=='新增'">
-          <el-input v-model="formData.password" placeholder="请输入密码" class="width240" type="password" auto-complete="off"></el-input>
+          <el-input
+            v-model="formData.password"
+            placeholder="请输入密码"
+            class="width240"
+            type="password"
+            auto-complete="off"
+          ></el-input>
           <p>不设置默认：123456</p>
         </el-form-item>
         <el-form-item label="工程名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入工程名称" class="width240" auto-complete="off"></el-input>
+          <el-input
+            v-model="formData.name"
+            placeholder="请输入工程名称"
+            class="width240"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="项目类别" prop="type">
           <el-select v-model="formData.type" class="width240" placeholder="请选择">
-            <el-option v-for="item in projectType" :key="item.id" :label="item.name" :value="item.id"></el-option>
+            <el-option
+              v-for="item in projectType"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="工程地点" required>
           <div class="width240 select-input">
             <selectCity @change="districtChange" :address="address"></selectCity>
           </div>
-          <el-input v-model="formData.address" placeholder="请输入工程详细地点" class="width240" auto-complete="off"></el-input>
+          <el-input
+            v-model="formData.address"
+            placeholder="请输入工程详细地点"
+            class="width240"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="结构类型" prop="structure_type">
           <el-select v-model="formData.structure_type" class="width240" placeholder="请选择结构类型">
@@ -174,50 +227,127 @@
           </el-select>
         </el-form-item>
         <el-form-item label="建筑规模" prop="scale">
-          <el-input class="width240" placeholder="请输入建筑规模" v-model="formData.scale" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入建筑规模"
+            v-model="formData.scale"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="建筑层数" prop="layers">
-          <el-input class="width240" placeholder="请输入建筑层数" v-model="formData.layers" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入建筑层数"
+            v-model="formData.layers"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="工程造价" prop="engineering_cost">
-          <el-input class="width240" placeholder="请输入工程造价" v-model="formData.engineering_cost" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入工程造价"
+            v-model="formData.engineering_cost"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="计划开工日期" prop="starttime">
-          <el-date-picker type="date" format="yyyy-MM-dd" v-model="formData.starttime" class="width240" value-format="timestamp" placeholder="选择日期"></el-date-picker>
+          <el-date-picker
+            type="date"
+            format="yyyy-MM-dd"
+            v-model="formData.starttime"
+            class="width240"
+            value-format="timestamp"
+            placeholder="选择日期"
+          ></el-date-picker>
         </el-form-item>
         <el-form-item label="计划竣工日期" class="date-item" prop="endtime">
-          <el-date-picker v-model="formData.endtime" type="date" format="yyyy-MM-dd" value-format="timestamp" class="width240" placeholder="选择日期"></el-date-picker>
+          <el-date-picker
+            v-model="formData.endtime"
+            type="date"
+            format="yyyy-MM-dd"
+            value-format="timestamp"
+            class="width240"
+            placeholder="选择日期"
+          ></el-date-picker>
         </el-form-item>
         <el-form-item label="建筑工程规划许可证" class="date-item" prop="license">
-          <el-input class="width240" placeholder="请输入建筑工程规划许可证" v-model="formData.license" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入建筑工程规划许可证"
+            v-model="formData.license"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="施工许可证" prop="make_license">
-          <el-input class="width240" placeholder="请输入施工许可证" v-model="formData.make_license" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入施工许可证"
+            v-model="formData.make_license"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="图纸审查批准编号" prop="tzscpz">
-          <el-input class="width240" placeholder="请输入图纸审查批准编号" v-model="formData.tzscpz" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入图纸审查批准编号"
+            v-model="formData.tzscpz"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="消防审查合格证号" prop="firecontrol_license">
-          <el-input class="width240" placeholder="请输入消防审查合格证号" v-model="formData.firecontrol_license" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入消防审查合格证号"
+            v-model="formData.firecontrol_license"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="监督备案登记号" prop="monitoring_id">
-          <el-input class="width240" placeholder="请输入监督备案登记号" v-model="formData.monitoring_id" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入监督备案登记号"
+            v-model="formData.monitoring_id"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
         <el-form-item label="建设单位" prop="construction_unit">
           <div class="width240">
-            <el-select v-model="formData.construction_unit" placeholder="请选择建设单位" filterable class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.construction_unit"
+              placeholder="请选择建设单位"
+              filterable
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
             </el-select>
-            <el-input placeholder="请输入建设单位负责人" v-model="formData.construction_user" auto-complete="off"></el-input>
+            <el-input
+              placeholder="请输入建设单位负责人"
+              v-model="formData.construction_user"
+              auto-complete="off"
+            ></el-input>
           </div>
         </el-form-item>
         <el-form-item label="勘查单位" prop="survey_unit">
           <div class="width240">
-            <el-select v-model="formData.survey_unit" placeholder="请选择勘查单位" class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.survey_unit"
+              placeholder="请选择勘查单位"
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
@@ -227,8 +357,17 @@
         </el-form-item>
         <el-form-item label="设计单位" prop="design_unit">
           <div class="width240">
-            <el-select v-model="formData.design_unit" placeholder="请选择设计单位" class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.design_unit"
+              placeholder="请选择设计单位"
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
@@ -239,8 +378,17 @@
         </el-form-item>
         <el-form-item label="施工单位" prop="shigong_unit">
           <div class="width240">
-            <el-select v-model="formData.shigong_unit" placeholder="请选择施工单位" class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.shigong_unit"
+              placeholder="请选择施工单位"
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
@@ -250,40 +398,83 @@
         </el-form-item>
         <el-form-item prop="supervision_unit" label="监理单位">
           <div class="width240">
-            <el-select v-model="formData.supervision_unit" placeholder="请选择监理单位" class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.supervision_unit"
+              placeholder="请选择监理单位"
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
             </el-select>
-            <el-input placeholder="请输监理单位负责人" v-model="formData.supervision_user" auto-complete="off"></el-input>
+            <el-input
+              placeholder="请输入监理单位负责人"
+              v-model="formData.supervision_user"
+              auto-complete="off"
+            ></el-input>
           </div>
         </el-form-item>
         <el-form-item prop="detection_unit" label="检测单位">
           <div class="width240">
-            <el-select v-model="formData.detection_unit" placeholder="请选择检测单位" class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.detection_unit"
+              placeholder="请选择检测单位"
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
             </el-select>
-            <el-input placeholder="请输入检测单位负责人" v-model="formData.detection_user" auto-complete="off"></el-input>
+            <el-input
+              placeholder="请输入检测单位负责人"
+              v-model="formData.detection_user"
+              auto-complete="off"
+            ></el-input>
           </div>
         </el-form-item>
         <el-form-item prop="detection_unit" label="商砼单位">
           <div class="width240">
-            <el-select v-model="formData.commercialconcrete_unit" placeholder="请选择商砼单位" class="width240 select-input">
-              <el-option v-for="(item, index) in options" :key="index" :label="`${item.com_name}/${item.corporation_name}`" :value="item.id">
+            <el-select
+              v-model="formData.commercialconcrete_unit"
+              placeholder="请选择商砼单位"
+              class="width240 select-input"
+            >
+              <el-option
+                v-for="(item, index) in options"
+                :key="index"
+                :label="`${item.com_name}/${item.corporation_name}`"
+                :value="item.id"
+              >
                 <span class="lable-left">{{ item.com_name }}</span>
                 <span class="lable-right">法人代表：{{ item.corporation_name }}</span>
               </el-option>
             </el-select>
-            <el-input placeholder="请输入商砼单位负责人" v-model="formData.commercialconcrete_user" auto-complete="off"></el-input>
+            <el-input
+              placeholder="请输入商砼单位负责人"
+              v-model="formData.commercialconcrete_user"
+              auto-complete="off"
+            ></el-input>
           </div>
         </el-form-item>
-
         <el-form-item label="监督组" prop="monitoring_group">
-          <el-input class="width240" placeholder="请输入监督组负责人" v-model="formData.monitoring_group" auto-complete="off"></el-input>
+          <el-input
+            class="width240"
+            placeholder="请输入监督组负责人"
+            v-model="formData.monitoring_group"
+            auto-complete="off"
+          ></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -337,7 +528,8 @@ const formJson = {
   provinceid: '',
   cityid: '',
   areaid: '',
-  address: ''
+  address: '',
+  commercialconcrete_unit: ''
 };
 export default {
   components: {
@@ -345,7 +537,7 @@ export default {
     printDemo: printDemo,
     vueEasyPrint: vueEasyPrint
   },
-  data () {
+  data() {
     let validatereg = (rule, value, callback) => {
       if (value === '') {
         callback()
@@ -454,18 +646,18 @@ export default {
     };
   },
   computed: {
-    tableData () {
+    tableData() {
       return { store_name: 'ceshi', detail: this.list }
     }
   },
   methods: {
     getImg,
-    districtChange (val) {
+    districtChange(val) {
       this.formData.provinceid = val[0]
       this.formData.cityid = val[1]
       this.formData.areaid = val[2]
     },
-    getCompany () {
+    getCompany() {
       let params = {
         keyword: ''
       }
@@ -473,7 +665,7 @@ export default {
         this.options = res || []
       })
     },
-    getType (pid) {
+    getType(pid) {
       let params = {
         pid: pid,
         keyword: ''
@@ -486,13 +678,13 @@ export default {
         })
       })
     },
-    printView () {
+    printView() {
       this.$refs.easyPrint.print()
     },
-    viewDetail (index, row) {
+    viewDetail(index, row) {
       this.$router.push('projectDetail?id=' + row.id)
     },
-    onReset () {
+    onReset() {
       this.$router.push({
         path: ""
       });
@@ -503,18 +695,18 @@ export default {
       };
       this.getList();
     },
-    onSubmit () {
+    onSubmit() {
       this.$router.push({
         path: "",
         query: this.query
       });
       this.getList();
     },
-    handleCurrentChange (val) {
+    handleCurrentChange(val) {
       this.query.page = val;
       this.getList();
     },
-    getList () {
+    getList() {
       this.loading = true;
       getProjectList(this.query)
         .then(response => {
@@ -529,7 +721,7 @@ export default {
           this.roles = [];
         });
     },
-    getRoleList () {
+    getRoleList() {
       authAdminRoleList(this.query)
         .then(response => {
           this.roles = response.data.list || [];
@@ -539,7 +731,7 @@ export default {
         });
     },
     // 刷新表单
-    resetForm () {
+    resetForm() {
       if (this.$refs["dataForm"]) {
         // 清空验证信息表单
         this.$refs["dataForm"].clearValidate();
@@ -548,7 +740,7 @@ export default {
       }
     },
     // 隐藏表单
-    hideForm () {
+    hideForm() {
       // 更改值
       this.formVisible = !this.formVisible;
       // 清空表单
@@ -556,7 +748,7 @@ export default {
       return true;
     },
     // 显示表单
-    handleForm (index, row) {
+    handleForm(index, row) {
       this.formVisible = true;
       this.formData = JSON.parse(JSON.stringify(formJson));
       if (row !== null) {
@@ -571,7 +763,7 @@ export default {
         this.formRules = this.addRules;
       }
     },
-    getProjectDetail (id) {
+    getProjectDetail(id) {
       getDetail({ id }).then(res => {
         this.formData = res || {}
         this.formData.structure_type = Number(this.formData.structure_type)
@@ -585,7 +777,7 @@ export default {
         }
       })
     },
-    editProject (data) {
+    editProject(data) {
       updateProject(data).then(response => {
         if (response) {
           this.formLoading = false;
@@ -597,7 +789,7 @@ export default {
         }
       });
     },
-    formSubmit () {
+    formSubmit() {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
           if (!this.formData.provinceid) {
@@ -615,13 +807,12 @@ export default {
           } else if (!this.formData.shigong_user) {
             this.$message.warning('请输入施工单位负责人')
           } else if (!this.formData.supervision_user) {
-            this.$message.warning('请输监理单位负责人')
+            this.$message.warning('请输入监理单位负责人')
           } else if (!this.formData.detection_user) {
-            this.$message.warning('请输检测单位负责人')
+            this.$message.warning('请输入检测单位负责人')
           } else if (!this.formData.commercialconcrete_user) {
-            this.$message.warning('请输商砼单位负责人')
+            this.$message.warning('请输入商砼单位负责人')
           } else {
-
             this.formLoading = true;
             let starttime = this.formData.starttime + ''
             this.formData.starttime = starttime.substring(0, 10)
@@ -647,7 +838,7 @@ export default {
       });
     },
     // 删除
-    handleDel (index, row) {
+    handleDel(index, row) {
       if (row.id) {
         this.$confirm("确认删除该项目吗?", "提示", {
           type: "warning"
@@ -676,7 +867,7 @@ export default {
       }
     }
   },
-  created () {
+  created() {
     // 将参数拷贝进查询对象
     let query = this.$route.query;
     this.query = Object.assign(this.query, query);
@@ -704,7 +895,7 @@ export default {
   text-align: center;
   .el-button {
     padding: 0 10px;
-    white-space:normal;
+    white-space: normal;
   }
 }
 .date-item {
