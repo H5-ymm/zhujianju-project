@@ -1,9 +1,9 @@
 <template>
   <div v-show="tableShow" ref="template" class="view-width">
-      <slot :getChineseNumber="getChineseNumber">
-        <div class="view-width"></div>
-      </slot>
-    </div>
+    <slot :getChineseNumber="getChineseNumber">
+      <div class="view-width"></div>
+    </slot>
+  </div>
 </template>
 
 <script>
@@ -266,9 +266,3 @@ export default {
   }
 };
 </script>
-<style>
-.view-width {
-  width: 100%;
-  height: 2000px;
-}
-</style>

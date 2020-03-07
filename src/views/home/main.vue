@@ -42,7 +42,7 @@
       max-height="1000px"
     >
       <el-table-column label="工程名称" prop="name" align="center" width="90px"></el-table-column>
-      <el-table-column label="工程地点" align="center" width="90px">
+      <el-table-column label="工程地点" align="center" width="140px">
         <template slot-scope="scope">
           <span>{{scope.row.province}}{{scope.row.city}}{{scope.row.area}}{{scope.row.address}}</span>
         </template>
@@ -320,7 +320,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -344,7 +344,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -364,7 +364,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -385,7 +385,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -405,7 +405,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -429,7 +429,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -444,7 +444,7 @@
             ></el-input>
           </div>
         </el-form-item>
-        <el-form-item prop="detection_unit" label="商砼单位">
+        <el-form-item prop="commercialconcrete_unit" label="商砼单位">
           <div class="width240">
             <el-select
               v-model="formData.commercialconcrete_unit"
@@ -453,7 +453,7 @@
             >
               <el-option
                 v-for="(item, index) in options"
-                :key="index"
+                :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
               >
@@ -721,15 +721,6 @@ export default {
           this.roles = [];
         });
     },
-    getRoleList() {
-      authAdminRoleList(this.query)
-        .then(response => {
-          this.roles = response.data.list || [];
-        })
-        .catch(() => {
-          this.roles = [];
-        });
-    },
     // 刷新表单
     resetForm() {
       if (this.$refs["dataForm"]) {
@@ -744,7 +735,7 @@ export default {
       // 更改值
       this.formVisible = !this.formVisible;
       // 清空表单
-      this.$refs["dataForm"].resetFields();
+      this.resetForm();
       return true;
     },
     // 显示表单
@@ -765,11 +756,11 @@ export default {
     },
     getProjectDetail(id) {
       getDetail({ id }).then(res => {
+        console.log(res)
         this.formData = res || {}
         this.formData.structure_type = Number(this.formData.structure_type)
         let starttime = this.$moment.unix(this.formData.starttime).format('YYYY-MM-DD')
         let endtime = this.$moment.unix(this.formData.endtime).format('YYYY-MM-DD')
-
         this.formData.starttime = this.$moment(starttime).valueOf()
         this.formData.endtime = this.$moment(endtime).valueOf()
         if (this.formData.provinceid) {
