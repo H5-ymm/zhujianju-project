@@ -108,7 +108,8 @@ export default {
 					this.total = response.count || 0;
 					this.options = [{ "id": 7, "name": "管理人员", "pid": 3 }, { "id": 8, "name": "瓦工", "pid": 3 }, { "id": 9, "name": "钢筋工", "pid": 3 }, { "id": 10, "name": "木工", "pid": 3 }, { "id": 11, "name": "架子工", "pid": 3 }, { "id": 12, "name": "水暖工", "pid": 3 }, { "id": 13, "name": "电工", "pid": 3 }, { "id": 14, "name": "起重司机", "pid": 3 }, { "id": 15, "name": "模板工", "pid": 3 }, { "id": 28, "name": "混泥土工", "pid": 3 }, { "id": 29, "name": "临工", "pid": 3 }, { "id": 30, "name": "其他", "pid": 3 }, { "id": 32, "name": "焊工", "pid": 3 }, { "id": 33, "name": "信号司索工", "pid": 3 }]
 					this.$nextTick(() => {
-						let width = this.$refs.table.clientWidth
+						let dom = this.$refs.table
+						let table = dom
 						console.log(this.$refs.table)
 					})
 				})
