@@ -25,19 +25,7 @@
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
-					<el-button
-						type="primary"
-						icon="el-icon-plus"
-						v-if="is_wmadmin"
-						@click.native="handleForm(null, null)"
-					>新增</el-button>
-					<el-button
-						type="primary"
-						v-if="is_wmadmin"
-						@click.native="viewQrcode"
-						icon="el-icon-view"
-					>查看二维码</el-button>
-					<el-button type="primary" icon="el-icon-document-copy" @click="printView" v-if="IsPC()">打印</el-button>
+					<el-button type="primary" icon="el-icon-plus" @click.native="handleForm(null, null)">新增</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
@@ -54,58 +42,16 @@
 			style="width: 100%;"
 			max-height="1000px"
 		>
-			<el-table-column label="工人姓名" align="center" prop="name" width="110px"></el-table-column>
-			<el-table-column label="地区" min-width="110px" align="center">
+			<el-table-column label="起重设备编号" align="center" prop="name" width="110px"></el-table-column>
+			<el-table-column label="设备类型" prop="job_type" width="110px" align="center"></el-table-column>
+			<el-table-column label="项目名称" min-width="110px" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.province}}{{scope.row.city}}{{scope.row.area}}{{scope.row.address}}</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="身份证号" prop="id_card" width="170px" align="center"></el-table-column>
-			<el-table-column label="手机号" width="110px" prop="tel" align="center"></el-table-column>
-			<el-table-column label="工种" prop="job_type" width="110px" align="center"></el-table-column>
-			<el-table-column label="性别" align="center" width="60px">
-				<template slot-scope="scope">
-					<span>{{scope.row.sex===1?'男':'女'}}</span>
-				</template>
-			</el-table-column>
-			<el-table-column label="当天体温" width="80px" align="center">
-				<template slot-scope="scope">
-					<span>{{scope.row.temperature?scope.row.temperature+'度':''}}</span>
-				</template>
-			</el-table-column>
-			<el-table-column label="紧急联系人" width="110px" prop="link_man" align="center"></el-table-column>
-			<el-table-column label="状态" align="center" v-if="is_wmadmin">
-				<template slot-scope="scope">
-					<el-tag
-						:type="scope.row.status==0?'warning':scope.row.status==1?'success':'danger'"
-					>{{scope.row.status==0?'待审核':scope.row.status==1?'已通过':'已拒绝'}}</el-tag>
-				</template>
-			</el-table-column>
-			<el-table-column label="签到状态" align="center" v-if="is_wmadmin">
-				<template slot-scope="scope">
-					<el-tag
-						:type="scope.row.is_attendance==0?'warning':'success'"
-					>{{scope.row.is_attendance==0?'未签到':'已签到'}}</el-tag>
-				</template>
-			</el-table-column>
-			<el-table-column label="审核签到状态" align="center" v-if="is_wmadmin">
-				<template slot-scope="scope">
-					<el-tag
-						:type="scope.row.sure_attendance==0?'warning':scope.row.sure_attendance==1?'success':'danger'"
-					>{{scope.row.sure_attendance==0?'待确认':scope.row.sure_attendance==1?'已确认':'未签到'}}</el-tag>
-				</template>
-			</el-table-column>
-			<el-table-column label="党员" align="center" width="60px">
-				<template slot-scope="scope">
-					<span>{{scope.row.partymember===1?'是':'否'}}</span>
-				</template>
-			</el-table-column>
-			<el-table-column label="贫困户" align="center" width="70px">
-				<template slot-scope="scope">
-					<span>{{scope.row.destitutemember===1?'是':'否'}}</span>
-				</template>
-			</el-table-column>
-			<el-table-column label="政府补助金额" prop="amount_of_grant" align="center" width="60px"></el-table-column>
+			<el-table-column label="报备日期" prop="id_card" width="170px" align="center"></el-table-column>
+			<el-table-column label="到检日期" width="110px" prop="tel" align="center"></el-table-column>
+			<el-table-column label="司机" width="110px" prop="link_man" align="center"></el-table-column>
 			<el-table-column
 				label="操作"
 				class="no-print"
@@ -157,27 +103,23 @@
 				:rules="addRules"
 				ref="dataForm"
 			>
-				<el-form-item label="手机号" prop="tel">
+				<el-form-item label="起重设备编号" prop="tel">
 					<el-input
 						class="width240"
 						:readonly="readonly"
 						@change="changeInput"
-						placeholder="请输入联系方式"
+						placeholder="请输入起重设备编号"
 						v-model="formData.tel"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="工人姓名" prop="name">
-					<el-input
-						v-model="formData.name"
-						:readonly="readonly"
-						placeholder="请输入工人姓名"
+				<el-form-item label="设备类型" prop="job_type">
+					<el-select
+						v-model="formData.job_type"
+						:disabled="readonly"
 						class="width240"
-						auto-complete="off"
-					></el-input>
-				</el-form-item>
-				<el-form-item label="工种" prop="job_type">
-					<el-select v-model="formData.job_type" :disabled="readonly" class="width240" placeholder="请选择">
+						placeholder="请选择设备类型"
+					>
 						<el-option
 							v-for="(item, index) in options"
 							:key="item.id"
@@ -186,65 +128,40 @@
 						></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="身份证" prop="id_card">
-					<el-input
-						v-model="formData.id_card"
-						:readonly="readonly"
-						placeholder="请输入身份证"
+				<el-form-item label="项目名称" prop="id_card">
+					<el-select v-model="query.item_id" filterable class="width240" placeholder="请选择项目名称">
+						<el-option
+							v-for="(item, index) in projectList"
+							:key="item.id"
+							:label="item.name"
+							:value="item.id"
+						></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="报备日期" prop="address">
+					<el-date-picker
+						v-model="query.date"
 						class="width240"
-						auto-complete="off"
-					></el-input>
+						value-format="timestamp"
+						type="date"
+						placeholder="选择报备日期"
+					></el-date-picker>
 				</el-form-item>
-				<el-form-item label="来源地" prop="address">
-					<div class="width240 select-input" v-if="!readonly">
-						<selectCity @change="districtChange" :address="address"></selectCity>
-					</div>
-					<div class="width240 select-input" v-else>
-						<p></p>
-					</div>
-				</el-form-item>
-				<el-form-item label="住址" prop="address">
-					<el-input
+				<el-form-item label="检查日期" prop="address">
+					<el-date-picker
+						v-model="query.date"
+						value-format="timestamp"
+						type="date"
 						class="width240"
-						placeholder="请输入住址"
-						v-model="formData.address"
-						:readonly="readonly"
-						auto-complete="off"
-					></el-input>
+						placeholder="选择检查日期"
+					></el-date-picker>
 				</el-form-item>
-				<el-form-item label="性别">
-					<el-radio-group class="width240" v-model="formData.sex">
-						<el-radio :label="1" :disabled="readonly">男</el-radio>
-						<el-radio :label="2" :disabled="readonly">女</el-radio>
-					</el-radio-group>
-				</el-form-item>
-				<el-form-item label="紧急联系人" prop="link_tel">
+				<el-form-item label="司机" prop="link_tel">
 					<el-input
 						class="width240"
 						:readonly="readonly"
 						placeholder="请输入紧急联系人"
 						v-model="formData.link_man"
-						auto-complete="off"
-					></el-input>
-				</el-form-item>
-				<el-form-item label="党员">
-					<el-radio-group class="width240" v-model="formData.partymember">
-						<el-radio :label="1" :disabled="readonly">是</el-radio>
-						<el-radio :label="2" :disabled="readonly">否</el-radio>
-					</el-radio-group>
-				</el-form-item>
-				<el-form-item label="贫困户">
-					<el-radio-group class="width240" v-model="formData.destitutemember">
-						<el-radio :label="1" :disabled="readonly">是</el-radio>
-						<el-radio :label="2" :disabled="readonly">否</el-radio>
-					</el-radio-group>
-				</el-form-item>
-				<el-form-item label="政府补助金额" v-if="formData.destitutemember==1">
-					<el-input
-						class="width240"
-						:readonly="readonly"
-						placeholder="请输入补助金额"
-						v-model="formData.amount_of_grant"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
@@ -296,10 +213,7 @@ const formJson = {
 	job_type: '',
 	link_man: '',
 	link_tel: '',
-	destitutemember: '',
-	partymember: '',
-	address: '',
-	amount_of_grant: ''
+	address: ''
 };
 export default {
 	components: {

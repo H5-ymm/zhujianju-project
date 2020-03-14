@@ -36,6 +36,7 @@
     <el-table
       v-loading="loading"
       :data="list"
+      :span-method="objectSpanMethod"
       show-summary
       style="width: 100%;"
       class="common-table"
@@ -497,7 +498,7 @@ import { getCorporationCompany } from "../../api/company/index"
 import { geTypeAll } from "../../api/file/data"
 import selectCity from "../../components/selectCity.vue";
 import printDemo from "../../components/printDemo.vue";
-import { getImg, checkNum } from "../../utils/util.js";
+import { getImg, checkChinese } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 const formJson = {
   username: '',
@@ -541,8 +542,8 @@ export default {
     let validatereg = (rule, value, callback) => {
       if (value === '') {
         callback()
-      } else if (!checkNum(value)) {
-        callback(new Error('请输入数字'))
+      } else if (!checkChinese(value)) {
+        callback(new Error('请输入汉字层数'))
       } else {
         callback()
       }
@@ -642,7 +643,8 @@ export default {
           { required: true, message: "请选择商砼单位", trigger: "change" }
         ]
       },
-      deleteLoading: false
+      deleteLoading: false,
+      spanArr: []
     };
   },
   computed: {
@@ -656,6 +658,35 @@ export default {
       this.formData.provinceid = val[0]
       this.formData.cityid = val[1]
       this.formData.areaid = val[2]
+    },
+    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+      if (columnIndex === 5) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        };
+      }
+    },
+    tableDatas() {
+      let contactDot = 0;
+      this.list.forEach((item, index) => {
+        item.index = index;
+        if (index === 0) {
+          this.spanArr.push(1);
+        } else {
+          if (item.make_license === this.list[index - 1].make_license) {
+            this.spanArr[contactDot] += 1;
+            this.spanArr.push(0);
+          } else {
+            this.spanArr.push(1);
+            contactDot = index;
+          }
+        }
+      });
+
+      console.log(this.spanArr)
     },
     getCompany() {
       let params = {
@@ -713,6 +744,7 @@ export default {
           this.loading = false;
           this.list = response.data || [];
           this.total = response.count || 0;
+          this.tableDatas()
         })
         .catch(() => {
           this.loading = false;
@@ -858,7 +890,7 @@ export default {
       }
     }
   },
-  created() {
+  mounted() {
     // 将参数拷贝进查询对象
     let query = this.$route.query;
     this.query = Object.assign(this.query, query);

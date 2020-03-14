@@ -124,7 +124,7 @@ export default {
 .print-table.el-table td {
   font-size: 10px !important;
   padding: 0 !important;
-  /* width: 55px !important; */
+  width: 55px !important;
   color: #333 !important;
 }
 .print-table.el-table .cell-item {
@@ -133,7 +133,7 @@ export default {
 .print-table.el-table th {
   font-size: 10px !important;
   padding: 0 !important;
-  /* width: 55px !important; */
+  width: 55px !important;
 }
 .print-table.el-table th > .cell {
   padding-left: 0 !important;
@@ -141,7 +141,6 @@ export default {
   width: 50px !important;
   line-height: 12px !important;
   font-size: 10px !important;
-  /* transform: scale(0.8) !important; */
 }
 .print-table.el-table .cell span {
   font-size: 10px !important;
@@ -169,11 +168,9 @@ export default {
   width: 80px !important;
 }
 .print-table.el-table .el-button {
-  word-break: break-all;
-}
-.print-table.el-table .el-button {
   font-size: 10px !important;
   padding: 0 !important;
   white-space: normal;
+  word-break: break-all;
 }
 </style>

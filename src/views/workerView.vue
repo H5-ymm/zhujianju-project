@@ -104,6 +104,27 @@
 					auto-complete="off"
 				></el-input>
 			</el-form-item>
+			<el-form-item label="党员">
+				<el-radio-group class="width220" v-model="formData.partymember">
+					<el-radio :label="1" :disabled="readonly">是</el-radio>
+					<el-radio :label="2" :disabled="readonly">否</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			<el-form-item label="贫困户">
+				<el-radio-group class="width220" v-model="formData.destitutemember">
+					<el-radio :label="1" :disabled="readonly">是</el-radio>
+					<el-radio :label="2" :disabled="readonly">否</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			<el-form-item label="政府补助金额" v-if="formData.destitutemember==1">
+				<el-input
+					class="width220"
+					:readonly="readonly"
+					placeholder="请输入补助金额"
+					v-model="formData.amount_of_grant"
+					auto-complete="off"
+				></el-input>
+			</el-form-item>
 			<el-form-item label="当天体温" v-if="addSuccess">
 				<el-input class="width220" readonly v-model="temperature" auto-complete="off"></el-input>
 			</el-form-item>
@@ -202,7 +223,10 @@ export default {
 				cityid: '',
 				areaid: '',
 				item_id: '',
-				openid: ''
+				openid: '',
+				partymember: '',
+				destitutemember: '',
+				amount_of_grant: ''
 			},
 			dialogVisible: false,
 			temperature: '',
