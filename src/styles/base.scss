@@ -88,7 +88,7 @@ input {
 @media screen and (max-width: 1070px) {
   .common-table {
     .el-button {
-      margin: 0 20px;
+      margin: 0 10px;
     }
   }
 }
@@ -123,18 +123,21 @@ input {
       text-align: left;
     }
   }
+
   .detail-view {
     .el-form-item__label {
-      text-align: left!important;
+      text-align: left !important;
     }
+
     .qrcode-box {
       .qrcode-img {
         width: 40px;
         height: 40px;
       }
     }
+
     .form-dialog {
-      padding-left: 80px!important;
+      padding-left: 80px !important;
     }
   }
 }

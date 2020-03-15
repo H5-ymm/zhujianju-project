@@ -2,20 +2,14 @@
 	<div>
 		<el-form :inline="true" :model="query" class="query-form">
 			<el-form-item class="query-form-item">
-				<el-input v-model="query.keyword" class="width200" placeholder="设备编号"></el-input>
+				<el-input v-model="query.keyword" class="width200" placeholder="请输入事项名称"></el-input>
 			</el-form-item>
 			<el-form-item class="query-form-item">
-				<el-date-picker
-					v-model="timeList"
-					value-format="timestamp"
-					@change="changeTime"
-					type="daterange"
-					range-separator="-"
-					class="width300"
-					unlink-panels
-					start-placeholder="开始日期"
-					end-placeholder="结束日期"
-				></el-date-picker>
+				<el-select v-model="query.status" placeholder="处理状态">
+					<el-option label="整改" value="1"></el-option>
+					<el-option label="待审核" value="2"></el-option>
+					<el-option label="已整改" value="3"></el-option>
+				</el-select>
 			</el-form-item>
 			<!-- <el-form-item class="query-form-item">
 				<el-date-picker v-model="query.date" value-format="timestamp" type="date" placeholder="选择日期时间"></el-date-picker>
@@ -23,7 +17,12 @@
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
-					<el-button type="primary" icon="el-icon-plus" @click.native="handleForm(null, null)">新增</el-button>
+					<el-button
+						type="primary"
+						icon="el-icon-plus"
+						v-if="!is_wmadmin"
+						@click.native="handleForm(null, null)"
+					>新增</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
@@ -37,14 +36,19 @@
 			id="printTest"
 			v-loading="loading"
 			:data="list"
-			:row-class-name="tableRowClassName"
 			style="width: 100%;"
 			max-height="1000px"
 		>
-			<el-table-column label="起重设备编号" align="center" prop="number" width="110px"></el-table-column>
-			<el-table-column label="设备类型" prop="type" width="110px" align="center"></el-table-column>
-			<el-table-column label="项目名称" prop="name" min-width="110px" align="center"></el-table-column>
-			<el-table-column label="报备日期" width="170px" align="center">
+			<el-table-column label="事项名称" align="center" prop="number" width="110px"></el-table-column>
+			<el-table-column label="内容描述" prop="type" width="110px" align="center"></el-table-column>
+			<el-table-column label="违规照片" prop="name" min-width="110px" align="center">
+				<template slot-scope="scope">
+					<div>
+						<img :src="getImg(scope.row.wg_img)" v-if="scope.row.wg_img" class="qrcode" alt="">
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column label="违规日期" width="170px" align="center">
 				<template slot-scope="scope">
 					<span>
 						{{scope.row.endtime?
@@ -52,24 +56,36 @@
 					</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="到检日期" width="110px" align="center">
+			<el-table-column label="整改意见" width="110px" prop="driver" align="center"></el-table-column>
+			<el-table-column label="整改照片" width="110px" align="center">
+				<template slot-scope="scope">
+					<div>
+						<img :src="getImg(scope.row.zg_img)" v-if="scope.row.zg_img" class="qrcode" alt="">
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column label="整改日期" width="170px" align="center">
 				<template slot-scope="scope">
 					<span>
 						{{scope.row.endtime?
-						$moment.unix(scope.row.check_date).format('YYYY-MM-DD'):''}}
+						$moment.unix(scope.row.report_date).format('YYYY-MM-DD'):''}}
 					</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="司机" width="110px" prop="driver" align="center"></el-table-column>
-			<el-table-column
-				label="操作"
-				v-if="!is_wmadmin"
-				class="no-print"
-				align="center"
-				min-width="120px"
-				fixed="right"
-			>
+			<el-table-column label="监督组" width="110px" prop="driver" align="center"></el-table-column>
+			<el-table-column label="处理状态" width="110px" align="center">
 				<template slot-scope="scope">
+					<span>{{scope.row.status==1?'待整改':scope.row.status==2?'待审核':'已整改'}}</span>
+				</template>
+			</el-table-column>
+			<el-table-column label="操作" class="no-print" align="center" min-width="120px" fixed="right">
+				<template slot-scope="scope">
+					<el-button
+						type="text"
+						size="small"
+						v-if="!is_wmadmin"
+						@click.native="switchCheck(scope.row)"
+					>审核</el-button>
 					<el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="text" size="small" @click.native="viewDetail(scope.$index, scope.row)">查看</el-button>
 					<!-- <el-button type="text" size="small" @click.native="handleDel(scope.$index, scope.row)">删除</el-button> -->
@@ -110,60 +126,106 @@
 				:rules="addRules"
 				ref="dataForm"
 			>
-				<el-form-item label="起重设备编号" prop="number">
+				<el-form-item label="事项名称" prop="title">
 					<el-input
 						class="width240"
 						:readonly="readonly"
 						@change="changeInput"
-						placeholder="请输入起重设备编号"
-						v-model="formData.number"
+						placeholder="请输入事项名称"
+						v-model="formData.title"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="设备类型" prop="type">
-					<el-select v-model="formData.type" :disabled="readonly" class="width240" placeholder="请选择设备类型">
-						<el-option
-							v-for="(item, index) in options"
-							:key="item.id"
-							:label="item.name"
-							:value="item.id"
-						></el-option>
-					</el-select>
-				</el-form-item>
-				<el-form-item label="项目名称" prop="name">
-					<el-select v-model="query.name" filterable class="width240" placeholder="请选择项目名称">
-						<el-option
-							v-for="(item, index) in projectList"
-							:key="item.id"
-							:label="item.name"
-							:value="item.id"
-						></el-option>
-					</el-select>
-				</el-form-item>
-				<el-form-item label="报备日期" prop="report_date">
-					<el-date-picker
-						v-model="query.report_date"
-						class="width240"
-						value-format="timestamp"
-						type="date"
-						placeholder="选择报备日期"
-					></el-date-picker>
-				</el-form-item>
-				<el-form-item label="检查日期" prop="check_date">
-					<el-date-picker
-						v-model="query.check_date"
-						value-format="timestamp"
-						type="date"
-						class="width240"
-						placeholder="选择检查日期"
-					></el-date-picker>
-				</el-form-item>
-				<el-form-item label="司机" prop="driver">
+				<el-form-item label="内容描述" prop="description">
 					<el-input
 						class="width240"
 						:readonly="readonly"
-						placeholder="请输入紧急联系人"
-						v-model="formData.driver"
+						type="textarea"
+						:rows="3"
+						placeholder="请输入内容描述"
+						v-model="formData.description"
+						auto-complete="off"
+					></el-input>
+				</el-form-item>
+				<el-form-item label="违规照片" required>
+					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
+					<el-upload
+						:limit="5"
+						action="customize"
+						ref="upload"
+						:show-file-list="false"
+						:http-request="upload"
+						@on-exceed="onExceed"
+					>
+						<div class="x-flex-start x-flex-wap el-upload-card">
+							<div class="x-flex-start x-flex-wap">
+								<img
+									v-if="fileList.length"
+									v-for="item in fileList"
+									class="el-upload-list__item"
+									:src="item"
+									:key="item"
+									alt=""
+								>
+								<div class="el-upload--picture-card el-upload-list__item-thumbnail">
+									<i class="el-icon-plus"></i>
+								</div>
+							</div>
+						</div>
+					</el-upload>
+				</el-form-item>
+				<el-form-item label="整改照片" required v-if="matterId&&is_wmadmin">
+					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
+					<el-upload
+						:limit="5"
+						action="customize"
+						ref="upload"
+						:show-file-list="false"
+						:http-request="upload"
+						@on-exceed="onExceed"
+					>
+						<div class="x-flex-start x-flex-wap el-upload-card">
+							<div class="x-flex-start x-flex-wap">
+								<img
+									v-if="fileList.length"
+									v-for="item in fileList"
+									class="el-upload-list__item"
+									:src="item"
+									:key="item"
+									alt=""
+								>
+								<div class="el-upload--picture-card el-upload-list__item-thumbnail">
+									<i class="el-icon-plus"></i>
+								</div>
+							</div>
+						</div>
+					</el-upload>
+				</el-form-item>
+				<el-form-item label="整改意见" v-if="matterId&&is_wmadmin" prop="suggestion">
+					<el-input
+						class="width240"
+						type="textarea"
+						:rows="3"
+						:readonly="readonly"
+						placeholder="请输入监督组"
+						v-model="formData.suggestion"
+						auto-complete="off"
+					></el-input>
+				</el-form-item>
+				<el-form-item label="处理状态" v-if="matterId">
+					<el-radio-group class="width240" v-model="formData.status">
+						<el-radio :label="1" :disabled="readonly&&is_wmadmin==1">待整改</el-radio>
+						<el-radio :label="2" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
+						<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
+						<el-radio :label="4" :disabled="readonly" v-if="!is_wmadmin">已退回</el-radio>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="监督组" prop="Supervisiongroup">
+					<el-input
+						class="width240"
+						:readonly="readonly"
+						placeholder="请输入监督组"
+						v-model="formData.Supervisiongroup"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
@@ -178,38 +240,38 @@
 				>提交</el-button>
 			</div>
 		</el-dialog>
-		<equipDetail
-			:equipmentId="equipmentId"
+		<workerDetail
+			:matterId="matterId"
 			:formVisible="formDetailVisible"
 			@hideForm="formDetailVisible=false"
-		></equipDetail>
+		></workerDetail>
 	</div>
 </template>
 
 <script>
 import {
-	getEquipment,
-	addEquipment
-} from "../../api/equipment/index";
+	getItemmanage,
+	addItemmanage,
+	updateItemmanage
+} from "../../api/matter/index";
 import { getNamelist } from "../../api/project/index";
-import equipDetail from "../../components/modal/equipDetail.vue";
+import WorkerDetail from "../../components/modal/workerDetail.vue";
+import selectCity from "../../components/selectCity.vue";
 import { geTypeAll } from "../../api/file/data"
 import { getImg } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
 
 const formJson = {
-	name: "",
-	number: "",
-	tel: '',
-	type: '',
-	report_date: '',
-	check_date: '',
-	driver: ''
+	title: "",
+	description: "",
+	wg_img: '',
+	Supervisiongroup: ''
 };
 export default {
 	components: {
-		equipDetail: equipDetail,
+		WorkerDetail: WorkerDetail,
+		selectCity: selectCity,
 		workerTable: workerTable,
 		vueEasyPrint: vueEasyPrint
 	},
@@ -217,7 +279,7 @@ export default {
 		return {
 			formDetailVisible: false,
 			dialogVisible: false,
-			equipmentId: '',
+			matterId: '',
 			roles: [],
 			query: {
 				keyword: '',
@@ -229,6 +291,7 @@ export default {
 			},
 			list: [],
 			value: '',
+			fileList: [],
 			total: 0,
 			loading: true,
 			index: null,
@@ -245,17 +308,14 @@ export default {
 			formRules: {},
 			status: 1,
 			addRules: {
-				name: [
-					{ required: true, message: "请选择项目名称", trigger: "change" }
+				title: [
+					{ required: true, message: "请输入事项名称", trigger: "blur" },
 				],
-				number: [
-					{ required: true, message: "请输入设备编码", trigger: "blur" },
+				description: [
+					{ required: true, message: "请输入内容描述", trigger: "change" }
 				],
-				type: [
-					{ required: true, message: "请选择设备类型", trigger: "change" }
-				],
-				driver: [
-					{ required: true, message: "请输入司机姓名", trigger: "blur" },
+				Supervisiongroup: [
+					{ required: true, message: "请输入监督组", trigger: "blur" }
 				],
 			},
 			deleteLoading: false,
@@ -263,8 +323,7 @@ export default {
 			readonly: false,
 			checkStatus: 1,
 			projectList: [],
-			workman_id: '',
-			timeList: []
+			workman_id: ''
 		};
 	},
 	computed: {
@@ -278,27 +337,21 @@ export default {
 		this.query = Object.assign(this.query, query);
 		this.query.limit = parseInt(this.query.limit);
 		this.getList();
-		this.getType(5).then(res => {
+		this.getType(3).then(res => {
 			this.options = res
 		})
 		this.getProject()
 	},
 	methods: {
+		getImg,
+		onExceed() {
+			this.$message.error("最多上传5张")
+		},
+		upload() { },
 		getProject() {
 			getNamelist().then(res => {
 				this.projectList = res
 			})
-		},
-		tableRowClassName({ row, rowIndex }) {
-			console.log(row)
-			if (row.out_time == 1) {
-				return 'warn-row';
-			}
-			return '';
-		},
-		changeTime(value) {
-			this.query.starttime = value ? value[0] : ''
-			this.query.endtime = value ? value[1] : ''
 		},
 		printView() {
 			this.$refs.easyPrint.print()
@@ -395,7 +448,7 @@ export default {
 		},
 		getList() {
 			this.loading = true;
-			getEquipment(this.query)
+			getItemmanage(this.query)
 				.then(response => {
 					this.readonly = false
 					this.loading = false;
@@ -456,7 +509,7 @@ export default {
 			})
 		},
 		viewDetail(index, row) {
-			this.equipmentId = row.id
+			this.matterId = row.id
 			this.formDetailVisible = true
 		},
 		switchCheck(item) {
@@ -490,7 +543,7 @@ export default {
 			}
 		},
 		addUser(data) {
-			addEquipment(data).then(response => {
+			addItemmanage(data).then(response => {
 				if (response) {
 					this.formLoading = false;
 					this.$message.success("操作成功");
@@ -572,11 +625,14 @@ export default {
     }
   }
 }
-.el-table .warn-row {
-  background: #f56c6c;
-  color: #fff;
-}
-.el-table .warn-row:hover {
-  color: #333;
+.el-dialog {
+  .el-radio {
+    margin-right: 10px;
+  }
+  .el-upload--picture-card {
+    width: 90px;
+    height: 90px;
+    line-height: 88px;
+  }
 }
 </style>

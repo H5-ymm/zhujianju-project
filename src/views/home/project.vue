@@ -108,8 +108,8 @@ export default {
 			this.$refs.easyPrint.print()
 		},
 		changeTime(value) {
-			this.params.starttime = value[0] ? value[0] : ''
-			this.params.endtime = value[1] ? value[1] : ''
+			this.query.starttime = value ? value[0] : ''
+			this.query.endtime = value ? value[1] : ''
 		},
 		onReset() {
 			this.query = {

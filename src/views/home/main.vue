@@ -150,12 +150,18 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination
-      :page-size="query.limit"
-      @current-change="handleCurrentChange"
-      layout="prev, pager, next,total"
-      :total="total"
-    ></el-pagination>
+    <el-row>
+      <el-col :span="12">
+        <el-pagination
+          :page-size="query.limit"
+          @current-change="handleCurrentChange"
+          layout="prev, pager, next,total"
+          :total="total"
+          class="pagination"
+        ></el-pagination>
+        <span class="count">项目总数 : {{count}}</span>
+      </el-col>
+    </el-row>
     <!--表单-->
     <el-dialog
       :title="formMap[formName]"
@@ -314,13 +320,14 @@
         <el-form-item label="建设单位" prop="construction_unit">
           <div class="width240">
             <el-select
+              @focus="selectCompany(16)"
               v-model="formData.construction_unit"
               placeholder="请选择建设单位"
               filterable
               class="width240 select-input"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -339,12 +346,13 @@
         <el-form-item label="勘查单位" prop="survey_unit">
           <div class="width240">
             <el-select
+              @focus="selectCompany(17)"
               v-model="formData.survey_unit"
               placeholder="请选择勘查单位"
               class="width240 select-input"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -359,12 +367,13 @@
         <el-form-item label="设计单位" prop="design_unit">
           <div class="width240">
             <el-select
+              @focus="selectCompany(18)"
               v-model="formData.design_unit"
               placeholder="请选择设计单位"
               class="width240 select-input"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -380,12 +389,13 @@
         <el-form-item label="施工单位" prop="shigong_unit">
           <div class="width240">
             <el-select
+              @focus="selectCompany(19)"
               v-model="formData.shigong_unit"
               placeholder="请选择施工单位"
               class="width240 select-input"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -400,12 +410,13 @@
         <el-form-item prop="supervision_unit" label="监理单位">
           <div class="width240">
             <el-select
+              @focus="selectCompany(20)"
               v-model="formData.supervision_unit"
               placeholder="请选择监理单位"
               class="width240 select-input"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -424,12 +435,13 @@
         <el-form-item prop="detection_unit" label="检测单位">
           <div class="width240">
             <el-select
+              @focus="selectCompany(21)"
               v-model="formData.detection_unit"
               placeholder="请选择检测单位"
               class="width240 select-input"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -451,9 +463,10 @@
               v-model="formData.commercialconcrete_unit"
               placeholder="请选择商砼单位"
               class="width240 select-input"
+              @focus="selectCompany(23)"
             >
               <el-option
-                v-for="(item, index) in options"
+                v-for="item in options"
                 :key="item.id"
                 :label="`${item.com_name}/${item.corporation_name}`"
                 :value="item.id"
@@ -492,7 +505,8 @@ import {
   addProject,
   deleteProject,
   updateProject,
-  getDetail
+  getDetail,
+  getitemcount
 } from "../../api/project/index";
 import { getCorporationCompany } from "../../api/company/index"
 import { geTypeAll } from "../../api/file/data"
@@ -644,7 +658,8 @@ export default {
         ]
       },
       deleteLoading: false,
-      spanArr: []
+      spanArr: [],
+      count: 0
     };
   },
   computed: {
@@ -652,12 +667,39 @@ export default {
       return { store_name: 'ceshi', detail: this.list }
     }
   },
+  mounted() {
+    // 将参数拷贝进查询对象
+    let query = this.$route.query;
+    this.query = Object.assign(this.query, query);
+    this.query.limit = parseInt(this.query.limit);
+    // 加载表格数据
+    this.getList();
+    this.getCount()
+    this.getType(1).then(res => {
+      this.projectType = res
+    })
+    this.getType(2).then(res => {
+      this.sortList = res
+    })
+    this.formData.provinceid = 620000
+    this.formData.cityid = 620800
+    this.formData.areaid = 620821
+  },
   methods: {
     getImg,
+    selectCompany(index) {
+      console.log(index)
+      this.getCompany(index)
+    },
     districtChange(val) {
       this.formData.provinceid = val[0]
       this.formData.cityid = val[1]
       this.formData.areaid = val[2]
+    },
+    getCount() {
+      getitemcount().then(res => {
+        this.count = res || 0
+      })
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex === 5) {
@@ -671,7 +713,7 @@ export default {
     },
     tableDatas() {
       let contactDot = 0;
-      this.list.forEach((item, index) => {
+      this.list.forEach(item => {
         item.index = index;
         if (index === 0) {
           this.spanArr.push(1);
@@ -688,9 +730,10 @@ export default {
 
       console.log(this.spanArr)
     },
-    getCompany() {
+    getCompany(type_id) {
       let params = {
-        keyword: ''
+        keyword: '',
+        type_id
       }
       getCorporationCompany(params).then(res => {
         this.options = res || []
@@ -889,24 +932,6 @@ export default {
           });
       }
     }
-  },
-  mounted() {
-    // 将参数拷贝进查询对象
-    let query = this.$route.query;
-    this.query = Object.assign(this.query, query);
-    this.query.limit = parseInt(this.query.limit);
-    // 加载表格数据
-    this.getList();
-    this.getCompany()
-    this.getType(1).then(res => {
-      this.projectType = res
-    })
-    this.getType(2).then(res => {
-      this.sortList = res
-    })
-    this.formData.provinceid = 620000
-    this.formData.cityid = 620800
-    this.formData.areaid = 620821
   }
 };
 </script>
@@ -944,5 +969,13 @@ export default {
 }
 .qrcode-status {
   color: #f56c6c;
+}
+.pagination {
+  float: left;
+}
+.count {
+  color: #333;
+  margin-top: 15px;
+  display: inline-block;
 }
 </style>

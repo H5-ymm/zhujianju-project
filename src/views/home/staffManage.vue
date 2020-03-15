@@ -105,7 +105,7 @@
 					<span>{{scope.row.destitutemember===1?'是':'否'}}</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="政府补助金额" prop="amount_of_grant" align="center" width="60px"></el-table-column>
+			<el-table-column label="政府补助金额" prop="amount_of_grant" align="center" width="110px"></el-table-column>
 			<el-table-column
 				label="操作"
 				class="no-print"
@@ -501,7 +501,7 @@ export default {
 		},
 		getList() {
 			this.loading = true;
-			getWorkmanList(this.query)
+			getWorkmanList(this.query, this.is_wmadmin)
 				.then(response => {
 					this.readonly = false
 					this.loading = false;

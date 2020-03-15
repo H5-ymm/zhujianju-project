@@ -7,6 +7,7 @@
           <el-menu-item index="2">结构类别</el-menu-item>
           <el-menu-item index="3">工种</el-menu-item>
           <el-menu-item index="4">企业类型</el-menu-item>
+          <el-menu-item index="5">设备类型</el-menu-item>
         </el-menu>
       </el-col>
       <el-col :span="16">

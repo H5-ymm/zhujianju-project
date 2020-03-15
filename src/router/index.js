@@ -16,6 +16,8 @@ import equipment from "../views/home/equipment.vue";
 import workerView from "../views/workerView.vue";
 import dataDictionary from "../views/home/dataDictionary.vue";
 import project from "../views/home/project.vue";
+import matterManage from "../views/home/matterManage.vue";
+
 import projectDetail from "../views/home/projectDetail.vue";
 
 // 管理组相关
@@ -128,7 +130,18 @@ export const manageRouter = [{
       component: equipment
     }]
   },
-
+  {
+    path: "/matterManage",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "daibanshixiang",
+    name: "事项管理",
+    noDropdown: true,
+    children: [{
+      path: 'matterManage',
+      component: matterManage
+    }]
+  },
   {
     path: "/project",
     component: Home,
