@@ -6,10 +6,16 @@
       :data="list"
       show-summary
       id="printTable"
+      :span-method="objectSpanMethod"
       style="width: 100%;"
       class="print-table"
       max-height="2000px"
     >
+      <el-table-column label="施工许可证号" width="60" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.make_license + ''}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="工程名称" prop="name" width="55" align="center"></el-table-column>
       <el-table-column label="工程地点" align="center" width="80">
         <template slot-scope="scope">
@@ -19,11 +25,6 @@
       <el-table-column label="项目类别" prop="type" width="55" align="center"></el-table-column>
       <el-table-column label="建筑规模" width="55" prop="scale" align="center"></el-table-column>
       <el-table-column label="工程造价" width="60" prop="engineering_cost" align="center"></el-table-column>
-      <el-table-column label="施工许可证号" width="60" align="center">
-        <template slot-scope="scope">
-          <span>{{scope.row.make_license + ''}}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="结构类型" prop="structure_type" align="center" width="55"></el-table-column>
       <el-table-column label="建设单位" width="60" align="center">
         <template slot-scope="scope">
@@ -86,28 +87,33 @@
           <span>{{scope.row.monitoring_group + ''}}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="计划竣工日期" width="55" align="center">
-      <template slot-scope="scope">
-        <span>
-          {{scope.row.endtime?
-          $moment.unix(scope.row.endtime).format('YYYY-MM-DD'):''}}
-        </span>
-      </template>
-      </el-table-column>-->
-      <!-- <el-table-column label="层数" align="center" width="55">
-      <template slot-scope="scope">
-        <span>{{scope.row.layers}}层</span>
-      </template>
-      </el-table-column>-->
     </el-table>
   </div>
 </template>
 <script>
 import { getImg } from "../utils/util.js";
 export default {
-  props: ['list'],
+  props: ['list', 'spanArr'],
+  data() {
+    return {
+
+    }
+  },
+  created() {
+    this.tableDatas()
+  },
   methods: {
-    getImg
+    getImg,
+    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+      if (columnIndex === 0) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        };
+      }
+    }
   }
 }
 </script>
@@ -157,12 +163,12 @@ export default {
   font-size: 10px !important;
   /* transform: scale(0.8) !important; */
 }
-.print-table.el-table td:nth-child(2) > .cell {
+.print-table.el-table td:nth-child(3) > .cell {
   padding-left: 0 !important;
   padding-right: 0 !important;
   width: 80px !important;
 }
-.print-table.el-table th:nth-child(2) > .cell {
+.print-table.el-table th:nth-child(3) > .cell {
   padding-left: 0 !important;
   padding-right: 0 !important;
   width: 80px !important;

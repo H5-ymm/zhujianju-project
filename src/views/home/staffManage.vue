@@ -20,7 +20,18 @@
 				</el-select>
 			</el-form-item>
 			<el-form-item class="query-form-item">
-				<el-date-picker v-model="query.date" value-format="timestamp" type="date" placeholder="选择日期时间"></el-date-picker>
+				<el-date-picker
+					v-model="timeList"
+					value-format="timestamp"
+					@change="changeTime"
+					type="daterange"
+					range-separator="-"
+					class="width300"
+					:picker-options="pickerOptions"
+					unlink-panels
+					start-placeholder="开始日期"
+					end-placeholder="结束日期"
+				></el-date-picker>
 			</el-form-item>
 			<el-form-item>
 				<el-button-group>
@@ -339,9 +350,10 @@ export default {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
 				item_id: '',
-				job_type: ''
+				job_type: '',
+				starttime: '',
+				endtime: ''
 			},
 			list: [],
 			value: '',
@@ -381,7 +393,19 @@ export default {
 			readonly: false,
 			checkStatus: 1,
 			projectList: [],
-			workman_id: ''
+			workman_id: '',
+			timeList: [],
+			pickerOptions: {
+				shortcuts: [{
+					text: '最近一个月',
+					onClick(picker) {
+						const end = new Date();
+						const start = new Date();
+						start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+						picker.$emit('pick', [start, end]);
+					}
+				}]
+			},
 		};
 	},
 	computed: {
@@ -405,6 +429,10 @@ export default {
 			getNamelist().then(res => {
 				this.projectList = res
 			})
+		},
+		changeTime(value) {
+			this.query.starttime = value ? value[0].toString().substring(0, 10) : ''
+			this.query.endtime = value ? value[1].toString().substring(0, 10) : ''
 		},
 		printView() {
 			this.$refs.easyPrint.print()
@@ -444,7 +472,8 @@ export default {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
+				starttime: '',
+				endtime: '',
 				item_id: '',
 				job_type: ''
 			};

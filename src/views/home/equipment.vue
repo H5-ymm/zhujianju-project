@@ -297,8 +297,8 @@ export default {
 			return '';
 		},
 		changeTime(value) {
-			this.query.starttime = value ? value[0] : ''
-			this.query.endtime = value ? value[1] : ''
+			this.query.starttime = value ? value[0].toString().substring(0, 10) : ''
+			this.query.endtime = value ? value[1].toString().substring(0, 10) : ''
 		},
 		printView() {
 			this.$refs.easyPrint.print()

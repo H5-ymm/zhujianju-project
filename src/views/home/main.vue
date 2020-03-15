@@ -30,7 +30,7 @@
     </el-form>
     <vue-easy-print :tableShow="false" ref="easyPrint" :onePageRow="10">
       <template>
-        <printDemo :list="list"></printDemo>
+        <printDemo :list="list" :spanArr="spanArr"></printDemo>
       </template>
     </vue-easy-print>
     <el-table
@@ -42,6 +42,11 @@
       class="common-table"
       max-height="1000px"
     >
+      <el-table-column label="施工许可证号" width="110px" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.make_license + ''}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="工程名称" prop="name" align="center" width="90px"></el-table-column>
       <el-table-column label="工程地点" align="center" width="140px">
         <template slot-scope="scope">
@@ -51,11 +56,6 @@
       <el-table-column label="项目类别" prop="type" align="center" width="90px"></el-table-column>
       <el-table-column label="建筑规模" prop="scale" align="center" width="100px"></el-table-column>
       <el-table-column label="工程造价" prop="engineering_cost" align="center" width="100px"></el-table-column>
-      <el-table-column label="施工许可证号" width="110px" align="center">
-        <template slot-scope="scope">
-          <span>{{scope.row.make_license + ''}}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="结构类型" prop="structure_type" align="center" width="100px"></el-table-column>
       <el-table-column label="监督注册号" align="center" width="100px">
         <template slot-scope="scope">
@@ -618,7 +618,7 @@ export default {
           { required: true, message: "请选择竣工时间", trigger: "change" }
         ],
         license: [
-          { required: true, message: "请输入许可证", trigger: "blur" }
+          { required: true, message: "请输入建筑工程规划许可证", trigger: "blur" }
         ],
         make_license: [
           { required: true, message: "请输入施工许可证", trigger: "blur" }
@@ -688,7 +688,6 @@ export default {
   methods: {
     getImg,
     selectCompany(index) {
-      console.log(index)
       this.getCompany(index)
     },
     districtChange(val) {
@@ -702,7 +701,7 @@ export default {
       })
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex === 5) {
+      if (columnIndex === 0) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -713,7 +712,7 @@ export default {
     },
     tableDatas() {
       let contactDot = 0;
-      this.list.forEach(item => {
+      this.list.forEach((item, index) => {
         item.index = index;
         if (index === 0) {
           this.spanArr.push(1);
@@ -726,9 +725,7 @@ export default {
             contactDot = index;
           }
         }
-      });
-
-      console.log(this.spanArr)
+      })
     },
     getCompany(type_id) {
       let params = {
@@ -785,6 +782,7 @@ export default {
       getProjectList(this.query)
         .then(response => {
           this.loading = false;
+          console.log(response.data)
           this.list = response.data || [];
           this.total = response.count || 0;
           this.tableDatas()
