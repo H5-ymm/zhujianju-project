@@ -94,14 +94,6 @@
 import { getImg } from "../utils/util.js";
 export default {
   props: ['list', 'spanArr'],
-  data() {
-    return {
-
-    }
-  },
-  created() {
-    this.tableDatas()
-  },
   methods: {
     getImg,
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {

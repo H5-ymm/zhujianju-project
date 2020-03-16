@@ -512,7 +512,7 @@ import { getCorporationCompany } from "../../api/company/index"
 import { geTypeAll } from "../../api/file/data"
 import selectCity from "../../components/selectCity.vue";
 import printDemo from "../../components/printDemo.vue";
-import { getImg, checkChinese } from "../../utils/util.js";
+import { getImg, checkNum } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 const formJson = {
   username: '',
@@ -556,8 +556,8 @@ export default {
     let validatereg = (rule, value, callback) => {
       if (value === '') {
         callback()
-      } else if (!checkChinese(value)) {
-        callback(new Error('请输入汉字层数'))
+      } else if (!checkNum(value)) {
+        callback(new Error('请输入数字'))
       } else {
         callback()
       }
@@ -580,6 +580,7 @@ export default {
         edit: "编辑"
       },
       options: [],
+      options1: [],
       projectType: [],
       sortList: [],
       formLoading: false,
@@ -605,7 +606,6 @@ export default {
         ],
         layers: [
           { required: true, message: "请输入层数", trigger: "blur" },
-          { validator: validatereg, trigger: 'blur' }
         ],
         engineering_cost: [
           { required: true, message: "请输入工程造价", trigger: "blur" },
@@ -674,6 +674,7 @@ export default {
     this.query.limit = parseInt(this.query.limit);
     // 加载表格数据
     this.getList();
+    this.getCompany()
     this.getCount()
     this.getType(1).then(res => {
       this.projectType = res
@@ -730,7 +731,7 @@ export default {
     getCompany(type_id) {
       let params = {
         keyword: '',
-        type_id
+        type_id: type_id ? type_id : ''
       }
       getCorporationCompany(params).then(res => {
         this.options = res || []
@@ -835,6 +836,8 @@ export default {
         let starttime = this.$moment.unix(this.formData.starttime).format('YYYY-MM-DD')
         let endtime = this.$moment.unix(this.formData.endtime).format('YYYY-MM-DD')
         this.formData.starttime = this.$moment(starttime).valueOf()
+        console.log(this.formData.starttime)
+        console.log(this.formData.endtime)
         this.formData.endtime = this.$moment(endtime).valueOf()
         if (this.formData.provinceid) {
           this.address = [this.formData.provinceid, this.formData.cityid, this.formData.areaid]
@@ -879,10 +882,10 @@ export default {
           } else {
             this.formLoading = true;
             let starttime = this.formData.starttime + ''
-            this.formData.starttime = starttime.substring(0, 10)
+            starttime = starttime.substring(0, 10)
             let endtime = this.formData.endtime + ''
-            this.formData.endtime = endtime.substring(0, 10)
-            let data = Object.assign({}, this.formData);
+            endtime = endtime.substring(0, 10)
+            let data = Object.assign({}, this.formData, { starttime: starttime, endtime: endtime });
             if (this.formData.id) {
               this.editProject(data)
             } else {
