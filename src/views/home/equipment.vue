@@ -4,6 +4,11 @@
 			<el-form-item class="query-form-item">
 				<el-input v-model="query.keyword" class="width200" placeholder="设备编号"></el-input>
 			</el-form-item>
+			<el-form-item>
+				<el-select v-model="query.type" filterable class="width240" placeholder="请选择项目名称">
+					<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
+			</el-form-item>
 			<el-form-item class="query-form-item">
 				<el-date-picker
 					v-model="timeList"
@@ -17,9 +22,6 @@
 					end-placeholder="结束日期"
 				></el-date-picker>
 			</el-form-item>
-			<!-- <el-form-item class="query-form-item">
-				<el-date-picker v-model="query.date" value-format="timestamp" type="date" placeholder="选择日期时间"></el-date-picker>
-			</el-form-item>-->
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
@@ -42,8 +44,8 @@
 			max-height="1000px"
 		>
 			<el-table-column label="起重设备编号" align="center" prop="number" width="110px"></el-table-column>
-			<el-table-column label="设备类型" prop="type" width="110px" align="center"></el-table-column>
-			<el-table-column label="项目名称" prop="name" min-width="110px" align="center"></el-table-column>
+			<el-table-column label="设备类型" prop="name" width="110px" align="center"></el-table-column>
+			<el-table-column label="项目名称" prop="type" min-width="110px" align="center"></el-table-column>
 			<el-table-column label="报备日期" width="170px" align="center">
 				<template slot-scope="scope">
 					<span>
@@ -83,16 +85,6 @@
 			:total="total"
 		></el-pagination>
 		<!--表单-->
-		<el-dialog title="提示" :visible.sync="dialogVisible" width="36%" :before-close="handleClose">
-			<el-radio-group v-model="status">
-				<el-radio :label="1">通过</el-radio>
-				<el-radio :label="2">拒绝</el-radio>
-			</el-radio-group>
-			<span slot="footer" class="dialog-footer">
-				<el-button @click="dialogVisible = false">取 消</el-button>
-				<el-button type="primary" @click="handleCheck">确 定</el-button>
-			</span>
-		</el-dialog>
 		<el-dialog
 			:title="formMap[formName]"
 			:visible.sync="formVisible"
@@ -114,30 +106,19 @@
 					<el-input
 						class="width240"
 						:readonly="readonly"
-						@change="changeInput"
 						placeholder="请输入起重设备编号"
 						v-model="formData.number"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="设备类型" prop="type">
-					<el-select v-model="formData.type" :disabled="readonly" class="width240" placeholder="请选择设备类型">
-						<el-option
-							v-for="(item, index) in options"
-							:key="item.id"
-							:label="item.name"
-							:value="item.id"
-						></el-option>
+				<el-form-item label="设备类型" prop="name">
+					<el-select v-model="formData.name" :disabled="readonly" class="width240" placeholder="请选择设备类型">
+						<el-option v-for="item in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="项目名称" prop="name">
-					<el-select v-model="query.name" filterable class="width240" placeholder="请选择项目名称">
-						<el-option
-							v-for="(item, index) in projectList"
-							:key="item.id"
-							:label="item.name"
-							:value="item.id"
-						></el-option>
+				<el-form-item label="项目名称" prop="type">
+					<el-select v-model="query.type" filterable class="width240" placeholder="请选择项目名称">
+						<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="报备日期" prop="report_date">
@@ -189,15 +170,15 @@
 <script>
 import {
 	getEquipment,
-	addEquipment
+	addEquipment,
+	getEquipmentDetail,
+	updateEquipment
 } from "../../api/equipment/index";
 import { getNamelist } from "../../api/project/index";
 import equipDetail from "../../components/modal/equipDetail.vue";
 import { geTypeAll } from "../../api/file/data"
-import { getImg } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
-
 const formJson = {
 	name: "",
 	number: "",
@@ -218,14 +199,13 @@ export default {
 			formDetailVisible: false,
 			dialogVisible: false,
 			equipmentId: '',
-			roles: [],
 			query: {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
-				item_id: '',
-				job_type: ''
+				starttime: '',
+				endtime: '',
+				type: ''
 			},
 			list: [],
 			value: '',
@@ -243,13 +223,12 @@ export default {
 			formData: formJson,
 			address: [],
 			formRules: {},
-			status: 1,
 			addRules: {
-				name: [
-					{ required: true, message: "请选择项目名称", trigger: "change" }
-				],
 				number: [
 					{ required: true, message: "请输入设备编码", trigger: "blur" },
+				],
+				name: [
+					{ required: true, message: "请选择设备类型", trigger: "change" }
 				],
 				type: [
 					{ required: true, message: "请选择设备类型", trigger: "change" }
@@ -261,9 +240,7 @@ export default {
 			deleteLoading: false,
 			checkObj: {},
 			readonly: false,
-			checkStatus: 1,
 			projectList: [],
-			workman_id: '',
 			timeList: []
 		};
 	},
@@ -303,44 +280,14 @@ export default {
 		printView() {
 			this.$refs.easyPrint.print()
 		},
-		viewQrcode() {
-			getqrcode().then(res => {
-				if (res) {
-					let url = getImg(res)
-					this.$alert(`<img src=${url} />`, '二维码', {
-						dangerouslyUseHTMLString: true
-					}).then(() => {
-						console.log(1)
-					})
-						.catch(action => {
-							console.log(action)
-						});
-				}
-			})
-		},
-		districtChange(val) {
-			this.formData.provinceid = val[0]
-			this.formData.cityid = val[1]
-			this.formData.areaid = val[2]
-		},
-		changeInput(e) {
-			getworkmanbytel({ tel: e }).then(res => {
-				if (res) {
-					this.formData = res
-					this.readonly = true
-				} else {
-					this.readonly = false
-				}
-			})
-		},
 		onReset() {
 			this.query = {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
-				item_id: '',
-				job_type: ''
+				starttime: '',
+				endtime: '',
+				type: ''
 			};
 			this.getList();
 		},
@@ -355,31 +302,6 @@ export default {
 				}).catch(() => {
 					reject()
 				})
-			})
-		},
-		checkSign(val) {
-			console.log(val)
-			this.checkStatus = 2
-			this.status = Number(val.sure_attendance)
-			console.log(this.status)
-			this.workman_id = val.id
-			this.dialogVisible = true
-		},
-		reviewSign() {
-			let params = {
-				workman_id: this.workman_id,
-				status: this.status,
-				time: this.query.date
-			}
-			sureAttendance(params).then(res => {
-				this.status = 1
-				if (res) {
-					this.dialogVisible = false;
-					this.$message.success("操作成功");
-					this.getList()
-				} else {
-					this.$message.error("操作失败");
-				}
 			})
 		},
 		onSubmit() {
@@ -407,7 +329,6 @@ export default {
 					this.loading = false;
 					this.list = [];
 					this.total = 0;
-					this.roles = [];
 				});
 		},
 		// 刷新表单
@@ -448,10 +369,7 @@ export default {
 			}
 		},
 		getDetail(id) {
-			getWorkmanDetail({ id }).then(res => {
-				if (res.provinceid) {
-					this.address = [res.provinceid, res.cityid, res.areaid]
-				}
+			getEquipmentDetail({ id }).then(res => {
 				this.formData = res
 			})
 		},
@@ -459,35 +377,8 @@ export default {
 			this.equipmentId = row.id
 			this.formDetailVisible = true
 		},
-		switchCheck(item) {
-			this.checkStatus = 1
-			this.checkObj = item
-			this.dialogVisible = true
-		},
 		handleClose() {
 			this.dialogVisible = false
-		},
-		handleCheck() {
-			if (this.checkStatus == 1) {
-				let params = {
-					id: this.checkObj.wid,
-					status: this.status
-				}
-				this.formLoading = true;
-				saveStatus(params).then(response => {
-					if (response) {
-						this.formLoading = false;
-						this.$message.success("操作成功");
-						this.dialogVisible = false;
-						this.getList()
-					} else {
-						this.$message.error("操作失败");
-					}
-					this.resetForm();
-				});
-			} else {
-				this.reviewSign()
-			}
 		},
 		addUser(data) {
 			addEquipment(data).then(response => {
@@ -510,7 +401,7 @@ export default {
 					if (!data.id) {
 						this.addUser(data)
 					} else {
-						updateWorkman(data, this.formName).then(response => {
+						updateEquipment(data, this.formName).then(response => {
 							if (response) {
 								this.formLoading = false;
 								this.$message.success("操作成功");

@@ -11,9 +11,6 @@
 					<el-option label="已整改" value="3"></el-option>
 				</el-select>
 			</el-form-item>
-			<!-- <el-form-item class="query-form-item">
-				<el-date-picker v-model="query.date" value-format="timestamp" type="date" placeholder="选择日期时间"></el-date-picker>
-			</el-form-item>-->
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
@@ -39,9 +36,9 @@
 			style="width: 100%;"
 			max-height="1000px"
 		>
-			<el-table-column label="事项名称" align="center" prop="number" width="110px"></el-table-column>
-			<el-table-column label="内容描述" prop="type" width="110px" align="center"></el-table-column>
-			<el-table-column label="违规照片" prop="name" min-width="110px" align="center">
+			<el-table-column label="事项名称" align="center" prop="title" width="110px"></el-table-column>
+			<el-table-column label="内容描述" prop="description" width="110px" align="center"></el-table-column>
+			<el-table-column label="违规照片" min-width="110px" align="center">
 				<template slot-scope="scope">
 					<div>
 						<img :src="getImg(scope.row.wg_img)" v-if="scope.row.wg_img" class="qrcode" alt="">
@@ -51,12 +48,12 @@
 			<el-table-column label="违规日期" width="170px" align="center">
 				<template slot-scope="scope">
 					<span>
-						{{scope.row.endtime?
-						$moment.unix(scope.row.report_date).format('YYYY-MM-DD'):''}}
+						{{scope.row.addtime?
+						$moment.unix(scope.row.addtime).format('YYYY-MM-DD'):''}}
 					</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="整改意见" width="110px" prop="driver" align="center"></el-table-column>
+			<el-table-column label="整改意见" width="110px" prop="suggestion" align="center"></el-table-column>
 			<el-table-column label="整改照片" width="110px" align="center">
 				<template slot-scope="scope">
 					<div>
@@ -67,12 +64,12 @@
 			<el-table-column label="整改日期" width="170px" align="center">
 				<template slot-scope="scope">
 					<span>
-						{{scope.row.endtime?
-						$moment.unix(scope.row.report_date).format('YYYY-MM-DD'):''}}
+						{{scope.row.uptime?
+						$moment.unix(scope.row.uptime).format('YYYY-MM-DD'):''}}
 					</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="监督组" width="110px" prop="driver" align="center"></el-table-column>
+			<el-table-column label="监督组" width="110px" prop="Supervisiongroup" align="center"></el-table-column>
 			<el-table-column label="处理状态" width="110px" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.status==1?'待整改':scope.row.status==2?'待审核':'已整改'}}</span>
@@ -130,7 +127,6 @@
 					<el-input
 						class="width240"
 						:readonly="readonly"
-						@change="changeInput"
 						placeholder="请输入事项名称"
 						v-model="formData.title"
 						auto-complete="off"
@@ -148,6 +144,33 @@
 					></el-input>
 				</el-form-item>
 				<el-form-item label="违规照片" required>
+					<p class="prompt">最多上传5张</p>
+					<el-upload
+						:limit="5"
+						action="customize"
+						ref="upload"
+						:show-file-list="false"
+						:http-request="upload"
+						@on-exceed="onExceed"
+					>
+						<div class="x-flex-start x-flex-wap el-upload-card">
+							<div class="x-flex-start x-flex-wap">
+								<img
+									v-if="fileList.length"
+									v-for="item in fileList"
+									class="el-upload-list__item"
+									:src="item"
+									:key="item"
+									alt=""
+								>
+								<div class="el-upload--picture-card el-upload-list__item-thumbnail">
+									<i class="el-icon-plus"></i>
+								</div>
+							</div>
+						</div>
+					</el-upload>
+				</el-form-item>
+				<el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
 					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
 					<el-upload
 						:limit="5"
@@ -174,34 +197,7 @@
 						</div>
 					</el-upload>
 				</el-form-item>
-				<el-form-item label="整改照片" required v-if="matterId&&is_wmadmin">
-					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
-					<el-upload
-						:limit="5"
-						action="customize"
-						ref="upload"
-						:show-file-list="false"
-						:http-request="upload"
-						@on-exceed="onExceed"
-					>
-						<div class="x-flex-start x-flex-wap el-upload-card">
-							<div class="x-flex-start x-flex-wap">
-								<img
-									v-if="fileList.length"
-									v-for="item in fileList"
-									class="el-upload-list__item"
-									:src="item"
-									:key="item"
-									alt=""
-								>
-								<div class="el-upload--picture-card el-upload-list__item-thumbnail">
-									<i class="el-icon-plus"></i>
-								</div>
-							</div>
-						</div>
-					</el-upload>
-				</el-form-item>
-				<el-form-item label="整改意见" v-if="matterId&&is_wmadmin" prop="suggestion">
+				<el-form-item label="整改意见" v-if="itemId&&is_wmadmin" prop="suggestion">
 					<el-input
 						class="width240"
 						type="textarea"
@@ -212,7 +208,7 @@
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="处理状态" v-if="matterId">
+				<el-form-item label="处理状态" v-if="itemId">
 					<el-radio-group class="width240" v-model="formData.status">
 						<el-radio :label="1" :disabled="readonly&&is_wmadmin==1">待整改</el-radio>
 						<el-radio :label="2" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
@@ -240,11 +236,12 @@
 				>提交</el-button>
 			</div>
 		</el-dialog>
-		<workerDetail
-			:matterId="matterId"
+		<matterDetail
+			:itemId="itemId"
+			:is_wmadmin="is_wmadmin"
 			:formVisible="formDetailVisible"
 			@hideForm="formDetailVisible=false"
-		></workerDetail>
+		></matterDetail>
 	</div>
 </template>
 
@@ -252,16 +249,14 @@
 import {
 	getItemmanage,
 	addItemmanage,
-	updateItemmanage
+	updateItemmanage,
+	getItemmanageDetail
 } from "../../api/matter/index";
-import { getNamelist } from "../../api/project/index";
-import WorkerDetail from "../../components/modal/workerDetail.vue";
-import selectCity from "../../components/selectCity.vue";
+import matterDetail from "../../components/modal/matterDetail.vue";
 import { geTypeAll } from "../../api/file/data"
 import { getImg } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
-
 const formJson = {
 	title: "",
 	description: "",
@@ -270,8 +265,7 @@ const formJson = {
 };
 export default {
 	components: {
-		WorkerDetail: WorkerDetail,
-		selectCity: selectCity,
+		matterDetail: matterDetail,
 		workerTable: workerTable,
 		vueEasyPrint: vueEasyPrint
 	},
@@ -279,15 +273,12 @@ export default {
 		return {
 			formDetailVisible: false,
 			dialogVisible: false,
-			matterId: '',
-			roles: [],
+			itemId: '',
 			query: {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
-				item_id: '',
-				job_type: ''
+				status: ''
 			},
 			list: [],
 			value: '',
@@ -321,9 +312,7 @@ export default {
 			deleteLoading: false,
 			checkObj: {},
 			readonly: false,
-			checkStatus: 1,
-			projectList: [],
-			workman_id: ''
+			checkStatus: 1
 		};
 	},
 	computed: {
@@ -340,7 +329,6 @@ export default {
 		this.getType(3).then(res => {
 			this.options = res
 		})
-		this.getProject()
 	},
 	methods: {
 		getImg,
@@ -348,52 +336,15 @@ export default {
 			this.$message.error("最多上传5张")
 		},
 		upload() { },
-		getProject() {
-			getNamelist().then(res => {
-				this.projectList = res
-			})
-		},
 		printView() {
 			this.$refs.easyPrint.print()
-		},
-		viewQrcode() {
-			getqrcode().then(res => {
-				if (res) {
-					let url = getImg(res)
-					this.$alert(`<img src=${url} />`, '二维码', {
-						dangerouslyUseHTMLString: true
-					}).then(() => {
-						console.log(1)
-					})
-						.catch(action => {
-							console.log(action)
-						});
-				}
-			})
-		},
-		districtChange(val) {
-			this.formData.provinceid = val[0]
-			this.formData.cityid = val[1]
-			this.formData.areaid = val[2]
-		},
-		changeInput(e) {
-			getworkmanbytel({ tel: e }).then(res => {
-				if (res) {
-					this.formData = res
-					this.readonly = true
-				} else {
-					this.readonly = false
-				}
-			})
 		},
 		onReset() {
 			this.query = {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
-				item_id: '',
-				job_type: ''
+				status: ''
 			};
 			this.getList();
 		},
@@ -408,31 +359,6 @@ export default {
 				}).catch(() => {
 					reject()
 				})
-			})
-		},
-		checkSign(val) {
-			console.log(val)
-			this.checkStatus = 2
-			this.status = Number(val.sure_attendance)
-			console.log(this.status)
-			this.workman_id = val.id
-			this.dialogVisible = true
-		},
-		reviewSign() {
-			let params = {
-				workman_id: this.workman_id,
-				status: this.status,
-				time: this.query.date
-			}
-			sureAttendance(params).then(res => {
-				this.status = 1
-				if (res) {
-					this.dialogVisible = false;
-					this.$message.success("操作成功");
-					this.getList()
-				} else {
-					this.$message.error("操作失败");
-				}
 			})
 		},
 		onSubmit() {
@@ -460,7 +386,6 @@ export default {
 					this.loading = false;
 					this.list = [];
 					this.total = 0;
-					this.roles = [];
 				});
 		},
 		// 刷新表单
@@ -501,7 +426,7 @@ export default {
 			}
 		},
 		getDetail(id) {
-			getWorkmanDetail({ id }).then(res => {
+			getItemmanageDetail({ id }).then(res => {
 				if (res.provinceid) {
 					this.address = [res.provinceid, res.cityid, res.areaid]
 				}
@@ -509,7 +434,7 @@ export default {
 			})
 		},
 		viewDetail(index, row) {
-			this.matterId = row.id
+			this.itemId = row.id
 			this.formDetailVisible = true
 		},
 		switchCheck(item) {
@@ -538,8 +463,6 @@ export default {
 					}
 					this.resetForm();
 				});
-			} else {
-				this.reviewSign()
 			}
 		},
 		addUser(data) {
@@ -563,7 +486,7 @@ export default {
 					if (!data.id) {
 						this.addUser(data)
 					} else {
-						updateWorkman(data, this.formName).then(response => {
+						updateItemmanage(data, this.formName).then(response => {
 							if (response) {
 								this.formLoading = false;
 								this.$message.success("操作成功");

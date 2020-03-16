@@ -60,17 +60,6 @@ export default {
 			}
 		}
 	},
-	computed: {
-		address() {
-			return this.formData.province + this.formData.city + this.formData.area
-		},
-		partymember() {
-			return this.formData.partymember == 1 ? '是' : '否'
-		},
-		destitutemember() {
-			return this.formData.destitutemember == 1 ? '是' : '否'
-		}
-	},
 	methods: {
 		getDetail(id) {
 			getEquipmentDetail({ id }).then(res => {

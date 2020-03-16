@@ -30,7 +30,7 @@
         <template slot-scope="scope">
           <div class="cell-item">
             <p>{{scope.row.construction_unit}}</p>
-            <el-button type="text">({{scope.row.survey_user}})</el-button>
+            <el-button type="text">({{scope.row.construction_user}})</el-button>
           </div>
         </template>
       </el-table-column>

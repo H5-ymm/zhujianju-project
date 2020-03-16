@@ -95,8 +95,8 @@
 			<el-table-column label="签到状态" align="center" v-if="is_wmadmin">
 				<template slot-scope="scope">
 					<el-tag
-						:type="scope.row.is_attendance==0?'warning':'success'"
-					>{{scope.row.is_attendance==0?'未签到':'已签到'}}</el-tag>
+						:type="scope.row.is_attendance==1?'success':'warning'"
+					>{{scope.row.is_attendance==1?'已签到':'未签到'}}</el-tag>
 				</template>
 			</el-table-column>
 			<el-table-column label="审核签到状态" align="center" v-if="is_wmadmin">
@@ -116,7 +116,11 @@
 					<span>{{scope.row.destitutemember===1?'是':'否'}}</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="政府补助金额" prop="amount_of_grant" align="center" width="110px"></el-table-column>
+			<el-table-column label="政府补助金额" prop="amount_of_grant" align="center" width="110px">
+				<template slot-scope="scope">
+					<span>{{scope.row.amount_of_grant?scope.row.amount_of_grant:'无'}}</span>
+				</template>
+			</el-table-column>
 			<el-table-column
 				label="操作"
 				class="no-print"
@@ -127,7 +131,12 @@
 			>
 				<template slot-scope="scope">
 					<el-button type="text" size="small" @click.native="switchCheck(scope.row)">审核</el-button>
-					<el-button type="text" size="small" @click.native="checkSign(scope.row)">审核签到</el-button>
+					<el-button
+						type="text"
+						size="small"
+						v-if="scope.row.attendance_id"
+						@click.native="checkSign(scope.row)"
+					>审核签到</el-button>
 					<el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="text" size="small" @click.native="viewDetail(scope.$index, scope.row)">查看</el-button>
 					<el-button type="text" size="small" @click.native="handleDel(scope.$index, scope.row)">删除</el-button>
@@ -390,6 +399,7 @@ export default {
 			},
 			deleteLoading: false,
 			checkObj: {},
+			attendance_id: '',
 			readonly: false,
 			checkStatus: 1,
 			projectList: [],
@@ -494,6 +504,7 @@ export default {
 		},
 		checkSign(val) {
 			console.log(val)
+			this.checkObj = val
 			this.checkStatus = 2
 			this.status = Number(val.sure_attendance)
 			console.log(this.status)
@@ -502,9 +513,8 @@ export default {
 		},
 		reviewSign() {
 			let params = {
-				workman_id: this.workman_id,
-				status: this.status,
-				time: this.query.date
+				attendance_id: this.checkObj.attendance_id,
+				status: this.status
 			}
 			sureAttendance(params).then(res => {
 				this.status = 1

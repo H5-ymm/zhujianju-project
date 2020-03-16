@@ -90,6 +90,15 @@ input {
     .el-button {
       margin: 0 10px;
     }
+
+    .cell-item {
+      text-align: center;
+
+      .el-button {
+        padding: 0 5px;
+        white-space: normal;
+      }
+    }
   }
 }
 

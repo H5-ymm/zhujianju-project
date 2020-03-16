@@ -66,7 +66,7 @@
         <template slot-scope="scope">
           <div class="cell-item">
             <p>{{scope.row.construction_unit}}</p>
-            <el-button type="text">{{scope.row.survey_user}}</el-button>
+            <el-button type="text">{{scope.row.construction_user}}</el-button>
           </div>
         </template>
       </el-table-column>
@@ -943,7 +943,7 @@ export default {
 .cell-item {
   text-align: center;
   .el-button {
-    padding: 0 10px;
+    padding: 0 5px;
     white-space: normal;
   }
 }

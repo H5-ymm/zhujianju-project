@@ -41,11 +41,11 @@
           >{{scope.row.status | statusFilterName}}</el-tag>
         </template>
       </el-table-column>-->
-      <el-table-column label="登录时间" with="300" align="center" :show-overflow-tooltip="true">
+      <!-- <el-table-column label="登录时间" with="300" align="center" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.last_login_time }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="操作" align="center" fixed="right">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>

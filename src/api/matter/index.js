@@ -5,7 +5,7 @@ import {
 export function getItemmanage(query) {
   return post("/itemmanage/list", query)
 }
-export function getDetail(query) {
+export function getItemmanageDetail(query) {
   return post("/itemmanage/getDetail", query)
 }
 export function addItemmanage(query) {

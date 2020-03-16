@@ -1,6 +1,6 @@
 <template>
 	<el-dialog
-		title="工人详情"
+		title="事项详情"
 		:visible.sync="formVisible"
 		:before-close="hideForm"
 		width="40%"
@@ -16,77 +16,58 @@
 			ref="dataForm"
 			v-if="formData"
 		>
-			<el-form-item label="工人姓名">
-				<el-input v-model="formData.name" class="width240" readonly></el-input>
+			<el-form-item label="事项名称">
+				<el-input v-model="formData.title" class="width240" readonly></el-input>
 			</el-form-item>
-			<el-form-item label="工种">
-				<el-input v-model="formData.job_type_name" class="width240" readonly></el-input>
+			<el-form-item label="内容描述">
+				<el-input class="width240" readonly type="textarea" :rows="3" v-model="formData.description"></el-input>
 			</el-form-item>
-			<el-form-item label="身份证">
-				<el-input v-model="formData.id_card" class="width240" readonly></el-input>
+			<el-form-item label="违规照片">
+				<div class="width240">
+					<img src="" alt="照片" class="img-icon">
+				</div>
 			</el-form-item>
-			<el-form-item label="手机号">
+			<el-form-item label="整改照片">
 				<el-input class="width240" v-model="formData.link_tel" readonly></el-input>
 			</el-form-item>
-			<el-form-item label="紧急联系人">
-				<el-input class="width240" v-model="formData.link_man" readonly></el-input>
+			<el-form-item label="整改意见">
+				<el-input class="width240" readonly type="textarea" :rows="3" v-model="formData.suggestion"></el-input>
 			</el-form-item>
-			<el-form-item label="性别">
-				<el-radio-group class="width240" v-model="formData.sex">
-					<el-radio :label="1" disabled>男</el-radio>
-					<el-radio :label="2" disabled>女</el-radio>
+			<el-form-item label="处理状态" v-if="itemId">
+				<el-radio-group class="width240" v-model="formData.status">
+					<el-radio :label="1" :disabled="is_wmadmin==1">待整改</el-radio>
+					<el-radio :label="2" :disabled="is_wmadmin==1">待审核</el-radio>
+					<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
+					<el-radio :label="4" :disabled="readonly" v-if="!is_wmadmin">已退回</el-radio>
 				</el-radio-group>
 			</el-form-item>
-			<el-form-item label="来源地">
-				<el-input class="width240" v-model="address" readonly></el-input>
-			</el-form-item>
-			<el-form-item label="地址">
-				<el-input class="width240" v-model="formData.address" readonly></el-input>
-			</el-form-item>
-			<el-form-item label="党员">
-				<el-input class="width240" v-model="partymember" readonly></el-input>
-			</el-form-item>
-			<el-form-item label="贫困户">
-				<el-input class="width240" v-model="destitutemember" readonly></el-input>
-			</el-form-item>
-			<el-form-item label="政府补贴金额" v-if="formData.destitutemember==1">
-				<el-input class="width240" v-model="formData.amount_of_grant" readonly></el-input>
+			<el-form-item label="监督组">
+				<el-input class="width240" v-model="formData.Supervisiongroup" readonly></el-input>
 			</el-form-item>
 		</el-form>
 	</el-dialog>
 </template>
 <script>
 import {
-	getWorkmanDetail
-} from "../../api/workman/index";
+	getItemmanageDetail
+} from "../../api/matter/index";
 export default {
-	props: ['workerId', 'formVisible'],
+	props: ['itemId', 'formVisible', 'is_wmadmin'],
 	data() {
 		return {
 			formData: {}
 		}
 	},
 	watch: {
-		workerId(val) {
+		itemId(val) {
 			if (val) {
 				this.getDetail(val)
 			}
 		}
 	},
-	computed: {
-		address() {
-			return this.formData.province + this.formData.city + this.formData.area
-		},
-		partymember() {
-			return this.formData.partymember == 1 ? '是' : '否'
-		},
-		destitutemember() {
-			return this.formData.destitutemember == 1 ? '是' : '否'
-		}
-	},
 	methods: {
 		getDetail(id) {
-			getWorkmanDetail({ id }).then(res => {
+			getItemmanageDetail({ id }).then(res => {
 				console.log(res)
 				this.formData = res
 			})
@@ -99,7 +80,16 @@ export default {
 </script>
 <style lang="scss">
 .form-detail-dialog {
-  .form {
+  .img-box {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    .img-icon {
+      width: 80px;
+      height: 80px;
+      margin-right: 5px;
+    }
   }
 }
 </style>
