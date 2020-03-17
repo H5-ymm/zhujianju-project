@@ -6,7 +6,12 @@
 			</el-form-item>
 			<el-form-item v-if="!is_wmadmin">
 				<el-select v-model="query.item_id" filterable class="width240" placeholder="请选择项目名称">
-					<el-option v-for="(item, index) in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+					<el-option
+						v-for="(item, index) in projectList"
+						:key="item.id"
+						:label="item.name"
+						:value="item.id"
+					></el-option>
 				</el-select>
 			</el-form-item>
 			<el-form-item>
@@ -15,23 +20,51 @@
 				</el-select>
 			</el-form-item>
 			<el-form-item class="query-form-item">
-				<el-date-picker v-model="query.date" value-format="timestamp" type="date" placeholder="选择日期时间"></el-date-picker>
+				<el-date-picker
+					v-model="timeList"
+					value-format="timestamp"
+					@change="changeTime"
+					type="daterange"
+					range-separator="-"
+					class="width300"
+					:picker-options="pickerOptions"
+					unlink-panels
+					start-placeholder="开始日期"
+					end-placeholder="结束日期"
+				></el-date-picker>
 			</el-form-item>
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
-					<el-button type="primary" icon="el-icon-plus" v-if="is_wmadmin" @click.native="handleForm(null, null)">新增</el-button>
-					<el-button type="primary" v-if="is_wmadmin" @click.native="viewQrcode" icon="el-icon-view">查看二维码</el-button>
-						<el-button type="primary" icon="el-icon-document-copy" @click="printView" v-if="IsPC()">打印</el-button>
+					<el-button
+						type="primary"
+						icon="el-icon-plus"
+						v-if="is_wmadmin"
+						@click.native="handleForm(null, null)"
+					>新增</el-button>
+					<el-button
+						type="primary"
+						v-if="is_wmadmin"
+						@click.native="viewQrcode"
+						icon="el-icon-view"
+					>查看二维码</el-button>
+					<el-button type="primary" icon="el-icon-document-copy" @click="printView" v-if="IsPC()">打印</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
-		 <vue-easy-print :tableShow="false" ref="easyPrint" :onePageRow="10">
-				<template>
-					<workerTable :list="list" :is_wmadmin="is_wmadmin"></workerTable>
-				</template>
-    </vue-easy-print>
-		<el-table class="common-table" id="printTest" v-loading="loading" :data="list" style="width: 100%;" max-height="1000px">
+		<vue-easy-print :tableShow="false" ref="easyPrint" :onePageRow="10">
+			<template>
+				<workerTable :list="list" :is_wmadmin="is_wmadmin"></workerTable>
+			</template>
+		</vue-easy-print>
+		<el-table
+			class="common-table"
+			id="printTest"
+			v-loading="loading"
+			:data="list"
+			style="width: 100%;"
+			max-height="1000px"
+		>
 			<el-table-column label="工人姓名" align="center" prop="name" width="110px"></el-table-column>
 			<el-table-column label="地区" min-width="110px" align="center">
 				<template slot-scope="scope">
@@ -41,12 +74,12 @@
 			<el-table-column label="身份证号" prop="id_card" width="170px" align="center"></el-table-column>
 			<el-table-column label="手机号" width="110px" prop="tel" align="center"></el-table-column>
 			<el-table-column label="工种" prop="job_type" width="110px" align="center"></el-table-column>
-			<el-table-column label="性别" align="center" width="110px">
+			<el-table-column label="性别" align="center" width="60px">
 				<template slot-scope="scope">
 					<span>{{scope.row.sex===1?'男':'女'}}</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="当天体温" width="110px" align="center">
+			<el-table-column label="当天体温" width="80px" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.temperature?scope.row.temperature+'度':''}}</span>
 				</template>
@@ -54,30 +87,68 @@
 			<el-table-column label="紧急联系人" width="110px" prop="link_man" align="center"></el-table-column>
 			<el-table-column label="状态" align="center" v-if="is_wmadmin">
 				<template slot-scope="scope">
-					<el-tag :type="scope.row.status==0?'warning':scope.row.status==1?'success':'danger'">{{scope.row.status==0?'待审核':scope.row.status==1?'已通过':'已拒绝'}}</el-tag>
+					<el-tag
+						:type="scope.row.status==0?'warning':scope.row.status==1?'success':'danger'"
+					>{{scope.row.status==0?'待审核':scope.row.status==1?'已通过':'已拒绝'}}</el-tag>
 				</template>
 			</el-table-column>
 			<el-table-column label="签到状态" align="center" v-if="is_wmadmin">
 				<template slot-scope="scope">
-					<el-tag :type="scope.row.is_attendance==0?'warning':'success'">{{scope.row.is_attendance==0?'未签到':'已签到'}}</el-tag>
+					<el-tag
+						:type="scope.row.is_attendance==1?'success':'warning'"
+					>{{scope.row.is_attendance==1?'已签到':'未签到'}}</el-tag>
 				</template>
 			</el-table-column>
 			<el-table-column label="审核签到状态" align="center" v-if="is_wmadmin">
-					<template slot-scope="scope">
-					<el-tag :type="scope.row.sure_attendance==0?'warning':scope.row.sure_attendance==1?'success':'danger'">{{scope.row.sure_attendance==0?'待确认':scope.row.sure_attendance==1?'已确认':'未签到'}}</el-tag>
+				<template slot-scope="scope">
+					<el-tag
+						:type="scope.row.sure_attendance==0?'warning':scope.row.sure_attendance==1?'success':'danger'"
+					>{{scope.row.sure_attendance==0?'待确认':scope.row.sure_attendance==1?'已确认':'未签到'}}</el-tag>
 				</template>
 			</el-table-column>
-			<el-table-column label="操作" class="no-print" v-if="is_wmadmin" align="center" min-width="120px" fixed="right">
+			<el-table-column label="党员" align="center" width="60px">
+				<template slot-scope="scope">
+					<span>{{scope.row.partymember===1?'是':'否'}}</span>
+				</template>
+			</el-table-column>
+			<el-table-column label="贫困户" align="center" width="70px">
+				<template slot-scope="scope">
+					<span>{{scope.row.destitutemember===1?'是':'否'}}</span>
+				</template>
+			</el-table-column>
+			<el-table-column label="政府补助金额" prop="amount_of_grant" align="center" width="110px">
+				<template slot-scope="scope">
+					<span>{{scope.row.amount_of_grant?scope.row.amount_of_grant:'无'}}</span>
+				</template>
+			</el-table-column>
+			<el-table-column
+				label="操作"
+				class="no-print"
+				v-if="is_wmadmin"
+				align="center"
+				min-width="120px"
+				fixed="right"
+			>
 				<template slot-scope="scope">
 					<el-button type="text" size="small" @click.native="switchCheck(scope.row)">审核</el-button>
-					<el-button type="text" size="small" @click.native="checkSign(scope.row)">审核签到</el-button>
+					<el-button
+						type="text"
+						size="small"
+						v-if="scope.row.attendance_id"
+						@click.native="checkSign(scope.row)"
+					>审核签到</el-button>
 					<el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="text" size="small" @click.native="viewDetail(scope.$index, scope.row)">查看</el-button>
 					<el-button type="text" size="small" @click.native="handleDel(scope.$index, scope.row)">删除</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
-		<el-pagination :page-size="query.limit" @current-change="handleCurrentChange" layout="prev, pager, next,total" :total="total"></el-pagination>
+		<el-pagination
+			:page-size="query.limit"
+			@current-change="handleCurrentChange"
+			layout="prev, pager, next,total"
+			:total="total"
+		></el-pagination>
 		<!--表单-->
 		<el-dialog title="提示" :visible.sync="dialogVisible" width="36%" :before-close="handleClose">
 			<el-radio-group v-model="status">
@@ -89,21 +160,60 @@
 				<el-button type="primary" @click="handleCheck">确 定</el-button>
 			</span>
 		</el-dialog>
-		<el-dialog :title="formMap[formName]" :visible.sync="formVisible" :before-close="hideForm" width="40%" top="5vh" class="form-dialog">
-			<el-form :model="formData" :inline="true" label-width="160px" label-position="right" class="form" :rules="addRules" ref="dataForm">
+		<el-dialog
+			:title="formMap[formName]"
+			:visible.sync="formVisible"
+			:before-close="hideForm"
+			width="40%"
+			top="5vh"
+			class="form-dialog"
+		>
+			<el-form
+				:model="formData"
+				:inline="true"
+				label-width="160px"
+				label-position="right"
+				class="form"
+				:rules="addRules"
+				ref="dataForm"
+			>
 				<el-form-item label="手机号" prop="tel">
-					<el-input class="width240" :readonly="readonly" @change="changeInput" placeholder="请输入联系方式" v-model="formData.tel" auto-complete="off"></el-input>
+					<el-input
+						class="width240"
+						:readonly="readonly"
+						@change="changeInput"
+						placeholder="请输入联系方式"
+						v-model="formData.tel"
+						auto-complete="off"
+					></el-input>
 				</el-form-item>
 				<el-form-item label="工人姓名" prop="name">
-					<el-input v-model="formData.name" :readonly="readonly" placeholder="请输入工人姓名" class="width240" auto-complete="off"></el-input>
+					<el-input
+						v-model="formData.name"
+						:readonly="readonly"
+						placeholder="请输入工人姓名"
+						class="width240"
+						auto-complete="off"
+					></el-input>
 				</el-form-item>
 				<el-form-item label="工种" prop="job_type">
 					<el-select v-model="formData.job_type" :disabled="readonly" class="width240" placeholder="请选择">
-						<el-option v-for="(item, index) in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
+						<el-option
+							v-for="(item, index) in options"
+							:key="item.id"
+							:label="item.name"
+							:value="item.id"
+						></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="身份证" prop="id_card">
-					<el-input v-model="formData.id_card" :readonly="readonly" placeholder="请输入身份证" class="width240" auto-complete="off"></el-input>
+					<el-input
+						v-model="formData.id_card"
+						:readonly="readonly"
+						placeholder="请输入身份证"
+						class="width240"
+						auto-complete="off"
+					></el-input>
 				</el-form-item>
 				<el-form-item label="来源地" prop="address">
 					<div class="width240 select-input" v-if="!readonly">
@@ -114,24 +224,66 @@
 					</div>
 				</el-form-item>
 				<el-form-item label="住址" prop="address">
-					<el-input class="width240" placeholder="请输入住址" v-model="formData.address" :readonly="readonly" auto-complete="off"></el-input>
+					<el-input
+						class="width240"
+						placeholder="请输入住址"
+						v-model="formData.address"
+						:readonly="readonly"
+						auto-complete="off"
+					></el-input>
 				</el-form-item>
-				<el-form-item label="性别" placeholder="请选择性别">
+				<el-form-item label="性别">
 					<el-radio-group class="width240" v-model="formData.sex">
 						<el-radio :label="1" :disabled="readonly">男</el-radio>
 						<el-radio :label="2" :disabled="readonly">女</el-radio>
 					</el-radio-group>
 				</el-form-item>
 				<el-form-item label="紧急联系人" prop="link_tel">
-					<el-input class="width240" :readonly="readonly" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
+					<el-input
+						class="width240"
+						:readonly="readonly"
+						placeholder="请输入紧急联系人"
+						v-model="formData.link_man"
+						auto-complete="off"
+					></el-input>
+				</el-form-item>
+				<el-form-item label="党员">
+					<el-radio-group class="width240" v-model="formData.partymember">
+						<el-radio :label="1" :disabled="readonly">是</el-radio>
+						<el-radio :label="2" :disabled="readonly">否</el-radio>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="贫困户">
+					<el-radio-group class="width240" v-model="formData.destitutemember">
+						<el-radio :label="1" :disabled="readonly">是</el-radio>
+						<el-radio :label="2" :disabled="readonly">否</el-radio>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="政府补助金额" v-if="formData.destitutemember==1">
+					<el-input
+						class="width240"
+						:readonly="readonly"
+						placeholder="请输入补助金额"
+						v-model="formData.amount_of_grant"
+						auto-complete="off"
+					></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click.native="hideForm">取消</el-button>
-				<el-button type="primary" @click.native="formSubmit()" :loading="formLoading" v-if="!readonly">提交</el-button>
+				<el-button
+					type="primary"
+					@click.native="formSubmit()"
+					:loading="formLoading"
+					v-if="!readonly"
+				>提交</el-button>
 			</div>
 		</el-dialog>
-		<workerDetail :workerId="workerId" :formVisible="formDetailVisible" @hideForm="formDetailVisible=false"></workerDetail>
+		<workerDetail
+			:workerId="workerId"
+			:formVisible="formDetailVisible"
+			@hideForm="formDetailVisible=false"
+		></workerDetail>
 	</div>
 </template>
 
@@ -164,7 +316,10 @@ const formJson = {
 	job_type: '',
 	link_man: '',
 	link_tel: '',
-	address: ''
+	destitutemember: '',
+	partymember: '',
+	address: '',
+	amount_of_grant: ''
 };
 export default {
 	components: {
@@ -204,9 +359,10 @@ export default {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
 				item_id: '',
-				job_type: ''
+				job_type: '',
+				starttime: '',
+				endtime: ''
 			},
 			list: [],
 			value: '',
@@ -243,10 +399,23 @@ export default {
 			},
 			deleteLoading: false,
 			checkObj: {},
+			attendance_id: '',
 			readonly: false,
 			checkStatus: 1,
 			projectList: [],
-			workman_id: ''
+			workman_id: '',
+			timeList: [],
+			pickerOptions: {
+				shortcuts: [{
+					text: '最近一个月',
+					onClick(picker) {
+						const end = new Date();
+						const start = new Date();
+						start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+						picker.$emit('pick', [start, end]);
+					}
+				}]
+			},
 		};
 	},
 	computed: {
@@ -270,6 +439,10 @@ export default {
 			getNamelist().then(res => {
 				this.projectList = res
 			})
+		},
+		changeTime(value) {
+			this.query.starttime = value ? value[0] : ''
+			this.query.endtime = value ? value[1] : ''
 		},
 		printView() {
 			this.$refs.easyPrint.print()
@@ -309,7 +482,8 @@ export default {
 				keyword: '',
 				page: 1,
 				limit: 10,
-				date: '',
+				starttime: '',
+				endtime: '',
 				item_id: '',
 				job_type: ''
 			};
@@ -330,6 +504,7 @@ export default {
 		},
 		checkSign(val) {
 			console.log(val)
+			this.checkObj = val
 			this.checkStatus = 2
 			this.status = Number(val.sure_attendance)
 			console.log(this.status)
@@ -338,9 +513,8 @@ export default {
 		},
 		reviewSign() {
 			let params = {
-				workman_id: this.workman_id,
-				status: this.status,
-				time: this.query.date
+				attendance_id: this.checkObj.attendance_id,
+				status: this.status
 			}
 			sureAttendance(params).then(res => {
 				this.status = 1
@@ -366,7 +540,7 @@ export default {
 		},
 		getList() {
 			this.loading = true;
-			getWorkmanList(this.query)
+			getWorkmanList(this.query, this.is_wmadmin)
 				.then(response => {
 					this.readonly = false
 					this.loading = false;

@@ -17,6 +17,11 @@ const service = axios.create({
 // request拦截器
 service.interceptors.request.use(
     config => {
+        console.log(config)
+        // if (config.url.indexOf('typeAll') == -1 &&
+        //   config.url.indexOf('typeList') == -1) {
+
+        // }
         if (store.getters.adminId && store.getters.token) {
             config.headers = {
                 'X-Adminid': store.getters.adminId,
@@ -65,7 +70,7 @@ service.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-export function post(url, data) {
+export function post (url, data) {
     return new Promise((resolve, reject) => {
         service.post(`${BASE_URL}${url}`, QS.stringify(data || {}))
             .then(res => {

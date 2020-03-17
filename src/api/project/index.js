@@ -20,3 +20,6 @@ export function updateProject(query) {
 export function getNamelist(query) {
   return post("/project/getitem_namelist", query)
 }
+export function getitemcount() {
+  return post("/project/getitemcount", {})
+}

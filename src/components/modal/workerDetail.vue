@@ -25,23 +25,32 @@
 			<el-form-item label="身份证">
 				<el-input v-model="formData.id_card" class="width240" readonly></el-input>
 			</el-form-item>
-			<el-form-item label="联系方式">
+			<el-form-item label="手机号">
 				<el-input class="width240" v-model="formData.link_tel" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="紧急联系人">
 				<el-input class="width240" v-model="formData.link_man" readonly></el-input>
 			</el-form-item>
-			<el-form-item label="联系方式">
+			<el-form-item label="性别">
 				<el-radio-group class="width240" v-model="formData.sex">
 					<el-radio :label="1" disabled>男</el-radio>
 					<el-radio :label="2" disabled>女</el-radio>
 				</el-radio-group>
 			</el-form-item>
+			<el-form-item label="来源地">
+				<el-input class="width240" v-model="address" readonly></el-input>
+			</el-form-item>
 			<el-form-item label="地址">
 				<el-input class="width240" v-model="formData.address" readonly></el-input>
 			</el-form-item>
-			<el-form-item label="来源地">
-				<el-input class="width240" placeholder="请输入来源地" v-model="formData.address" readonly></el-input>
+			<el-form-item label="党员">
+				<el-input class="width240" v-model="partymember" readonly></el-input>
+			</el-form-item>
+			<el-form-item label="贫困户">
+				<el-input class="width240" v-model="destitutemember" readonly></el-input>
+			</el-form-item>
+			<el-form-item label="政府补贴金额" v-if="formData.destitutemember==1">
+				<el-input class="width240" v-model="formData.amount_of_grant" readonly></el-input>
 			</el-form-item>
 		</el-form>
 	</el-dialog>
@@ -62,6 +71,17 @@ export default {
 			if (val) {
 				this.getDetail(val)
 			}
+		}
+	},
+	computed: {
+		address() {
+			return this.formData.province + this.formData.city + this.formData.area
+		},
+		partymember() {
+			return this.formData.partymember == 1 ? '是' : '否'
+		},
+		destitutemember() {
+			return this.formData.destitutemember == 1 ? '是' : '否'
 		}
 	},
 	methods: {

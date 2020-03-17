@@ -6,6 +6,20 @@
   "description": "建筑业",
   "glyphs": [
     {
+      "icon_id": "1447806",
+      "name": "待办事项",
+      "font_class": "daibanshixiang",
+      "unicode": "e633",
+      "unicode_decimal": 58931
+    },
+    {
+      "icon_id": "4854093",
+      "name": "设备管理",
+      "font_class": "shebeiguanli",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
       "icon_id": "7316717",
       "name": "项目详情",
       "font_class": "xiangmuxiangqing",

@@ -1,10 +1,19 @@
 <template>
 	<div class="worker-view">
-		<div class="worker-header">
+		<!-- <div class="worker-header">
 			<p class="title">泾川县建设工程监管平台</p>
-		</div>
+		</div>-->
 		<p class="projectName" v-if="projectName">项目名称：{{projectName}}</p>
-		<el-form :model="formData" class="tel-form form" :inline="true" label-width="120px" v-if="step==1" label-position="right" :rules="rules" ref="telForm">
+		<el-form
+			:model="formData"
+			class="tel-form form"
+			:inline="true"
+			label-width="120px"
+			v-if="step==1"
+			label-position="right"
+			:rules="rules"
+			ref="telForm"
+		>
 			<el-form-item label="手机号" prop="tel">
 				<el-input class="width220" placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
 			</el-form-item>
@@ -12,21 +21,54 @@
 				<el-button type="primary" class="submit-btn" @click.native="submitTel">确定</el-button>
 			</div>
 		</el-form>
-		<el-form :model="formData" :inline="true" label-width="120px" v-else label-position="right" class="form" :rules="formRules" ref="dataForm">
+		<el-form
+			:model="formData"
+			:inline="true"
+			label-width="120px"
+			v-else
+			label-position="right"
+			class="form"
+			:rules="formRules"
+			ref="dataForm"
+		>
 			<el-form-item label="手机号">
-				<el-input class="width220" readonly placeholder="请输入手机号" v-model="formData.tel" auto-complete="off"></el-input>
+				<el-input
+					class="width220"
+					readonly
+					placeholder="请输入手机号"
+					v-model="formData.tel"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
 			<el-form-item label="工人姓名" prop="name">
-				<el-input v-model="formData.name" :readonly="readonly" placeholder="请输入工人姓名" class="width220" auto-complete="off"></el-input>
+				<el-input
+					v-model="formData.name"
+					:readonly="readonly"
+					placeholder="请输入工人姓名"
+					class="width220"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
 			<el-form-item label="工种" prop="job_type">
-				<el-select v-model="formData.job_type" v-if="!readonly" :disabled="readonly" class="width220" placeholder="请选择">
+				<el-select
+					v-model="formData.job_type"
+					v-if="!readonly"
+					:disabled="readonly"
+					class="width220"
+					placeholder="请选择"
+				>
 					<el-option v-for="(item, index) in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>
 				<p class="el-input__inner width220" v-else>{{formData.type_name}}</p>
 			</el-form-item>
 			<el-form-item label="身份证" prop="id_card">
-				<el-input v-model="formData.id_card" :readonly="readonly" placeholder="请输入身份证" class="width220" auto-complete="off"></el-input>
+				<el-input
+					v-model="formData.id_card"
+					:readonly="readonly"
+					placeholder="请输入身份证"
+					class="width220"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
 			<el-form-item label="性别" placeholder="请选择性别">
 				<el-radio-group class="width220" v-if="!readonly" v-model="formData.sex">
@@ -36,7 +78,13 @@
 				<p class="el-input__inner width220" v-else>{{formData.sex==1?'男':formData.sex==2?'女':'未设置'}}</p>
 			</el-form-item>
 			<el-form-item label="紧急联系人" prop="link_man">
-				<el-input class="width220" :readonly="readonly" placeholder="请输入紧急联系人" v-model="formData.link_man" auto-complete="off"></el-input>
+				<el-input
+					class="width220"
+					:readonly="readonly"
+					placeholder="请输入紧急联系人"
+					v-model="formData.link_man"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
 			<el-form-item label="来源地">
 				<div class="width220 select-input">
@@ -48,22 +96,68 @@
 				</div>
 			</el-form-item>
 			<el-form-item label="住址">
-				<el-input class="width220" :readonly="readonly" placeholder="请输入住址" v-model="formData.address" auto-complete="off"></el-input>
+				<el-input
+					class="width220"
+					:readonly="readonly"
+					placeholder="请输入住址"
+					v-model="formData.address"
+					auto-complete="off"
+				></el-input>
+			</el-form-item>
+			<el-form-item label="党员">
+				<el-radio-group class="width220" v-model="formData.partymember">
+					<el-radio :label="1" :disabled="readonly">是</el-radio>
+					<el-radio :label="2" :disabled="readonly">否</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			<el-form-item label="贫困户">
+				<el-radio-group class="width220" v-model="formData.destitutemember">
+					<el-radio :label="1" :disabled="readonly">是</el-radio>
+					<el-radio :label="2" :disabled="readonly">否</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			<el-form-item label="政府补助金额" v-if="formData.destitutemember==1">
+				<el-input
+					class="width220"
+					:readonly="readonly"
+					placeholder="请输入补助金额"
+					v-model="formData.amount_of_grant"
+					auto-complete="off"
+				></el-input>
 			</el-form-item>
 			<el-form-item label="当天体温" v-if="addSuccess">
 				<el-input class="width220" readonly v-model="temperature" auto-complete="off"></el-input>
 			</el-form-item>
 			<div class="btn-box" v-if="!bindProject&&!addSuccess">
-				<el-button type="primary" class="submit-btn" @click.native="formSubmit()">
-					{{!readonly?'注册':'加入项目'}}</el-button>
+				<el-button
+					type="primary"
+					class="submit-btn"
+					@click.native="formSubmit()"
+				>{{!readonly?'注册':'加入项目'}}</el-button>
 			</div>
 			<div class="btn-box" v-if="bindProject&&id">
-				<el-button type="primary" class="submit-btn" :disabled="isSign" @click.native="setSign">{{!isSign?'签到':'已签到'}}</el-button>
+				<el-button
+					type="primary"
+					class="submit-btn"
+					:disabled="isSign"
+					@click.native="setSign"
+				>{{!isSign?'签到':'已签到'}}</el-button>
 				<el-button type="primary" class="submit-btn" @click.native="addTemp">添加体温</el-button>
 			</div>
 		</el-form>
-		<el-dialog title="提示" :visible.sync="dialogVisible" width="28%" center :before-close="handleClose">
-			<el-input v-model="temperature" placeholder="请输入体温" class="width220 input-tiwen" auto-complete="off"></el-input>
+		<el-dialog
+			title="提示"
+			:visible.sync="dialogVisible"
+			width="28%"
+			center
+			:before-close="handleClose"
+		>
+			<el-input
+				v-model="temperature"
+				placeholder="请输入体温"
+				class="width220 input-tiwen"
+				auto-complete="off"
+			></el-input>
 			<span slot="footer" class="dialog-footer">
 				<el-button @click="dialogVisible = false">取 消</el-button>
 				<el-button type="primary" @click="handleOk">确 定</el-button>
@@ -90,7 +184,7 @@ export default {
 	components: {
 		selectCity: selectCity
 	},
-	data () {
+	data() {
 		let validatereg = (rule, value, callback) => {
 			//验证用户名是否合法
 			let reg = /^1[3456789]\d{9}$/
@@ -129,7 +223,10 @@ export default {
 				cityid: '',
 				areaid: '',
 				item_id: '',
-				openid: ''
+				openid: '',
+				partymember: '',
+				destitutemember: '',
+				amount_of_grant: ''
 			},
 			dialogVisible: false,
 			temperature: '',
@@ -163,7 +260,7 @@ export default {
 			isSign: false
 		}
 	},
-	created () {
+	created() {
 		let state = getQueryString('state')
 		if (state) {
 			this.item_id = state.split('#')[0]
@@ -179,15 +276,15 @@ export default {
 		})
 	},
 	methods: {
-		getName () {
+		getName() {
 			getitemname({ item_id: this.item_id }).then(res => {
 				this.projectName = res
 			})
 		},
-		handleClose () {
+		handleClose() {
 			this.dialogVisible = false
 		},
-		submitTel () {
+		submitTel() {
 			this.$refs["telForm"].validate(valid => {
 				if (valid) {
 					let params = {
@@ -198,13 +295,13 @@ export default {
 				}
 			})
 		},
-		resetFormTel () {
+		resetFormTel() {
 			if (this.$refs["telForm"]) {
 				this.$refs["telForm"].clearValidate();
 				this.$refs["telForm"].resetFields();
 			}
 		},
-		byTelGetInfo (params) {
+		byTelGetInfo(params) {
 			getWxworkmanbytel(params).then(res => {
 				if (res && res.id) {
 					this.id = res.id || ''
@@ -231,10 +328,10 @@ export default {
 				this.step = 2
 			})
 		},
-		addTemp () {
+		addTemp() {
 			this.dialogVisible = true
 		},
-		setSign () {
+		setSign() {
 			let params = {
 				workman_id: this.id || this.formData.id,
 				item_id: this.item_id
@@ -249,7 +346,7 @@ export default {
 				}
 			})
 		},
-		handleOk (temperature) {
+		handleOk(temperature) {
 			if (!this.temperature) {
 				return this.$message.warning('请输入体温')
 			}
@@ -268,12 +365,12 @@ export default {
 				}
 			})
 		},
-		districtChange (val) {
+		districtChange(val) {
 			this.formData.provinceid = val[0]
 			this.formData.cityid = val[1]
 			this.formData.areaid = val[2]
 		},
-		getType (pid) {
+		getType(pid) {
 			let params = {
 				pid,
 				keyword: ''
@@ -284,13 +381,13 @@ export default {
 				})
 			})
 		},
-		resetForm () {
+		resetForm() {
 			if (this.$refs["dataForm"]) {
 				this.$refs["dataForm"].clearValidate();
 				this.$refs["dataForm"].resetFields();
 			}
 		},
-		bindWorkProject () {
+		bindWorkProject() {
 			let params = {
 				item_id: this.item_id,
 				id: this.id
@@ -305,7 +402,7 @@ export default {
 				}
 			});
 		},
-		addWorkBind (params) {
+		addWorkBind(params) {
 			addWork(params).then(response => {
 				if (response) {
 					this.id = response
@@ -321,7 +418,7 @@ export default {
 				this.resetForm();
 			})
 		},
-		formSubmit () {
+		formSubmit() {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					if (this.readonly && !this.bindProject) {
@@ -340,23 +437,23 @@ export default {
 <style lang="scss">
 .worker-view {
   margin: 0 auto 10px;
-	padding-bottom: 30px;
+  padding-bottom: 30px;
   width: 100%;
   overflow-y: auto;
-	overflow-x: hidden;
-	height: 100%;
-	.worker-header {
-		height: 110px;
-		width: 100%;
-		background: url('../assets/image/bg.jpg') no-repeat center bottom;
-		background-size: 100%;
-		position: relative;
-		.title {
-			color: #fff;
-			font-size: 20px;
-			padding: 20px;
-		}
-	}
+  overflow-x: hidden;
+  height: 100%;
+  .worker-header {
+    height: 110px;
+    width: 100%;
+    background: url("../assets/image/bg.jpg") no-repeat center bottom;
+    background-size: 100%;
+    position: relative;
+    .title {
+      color: #fff;
+      font-size: 20px;
+      padding: 20px;
+    }
+  }
   .projectName {
     color: #333;
     font-weight: bold;

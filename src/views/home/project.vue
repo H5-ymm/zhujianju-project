@@ -5,33 +5,27 @@
 				<el-input v-model="query.keyword" class="width200" placeholder="项目名称"></el-input>
 			</el-form-item>
 			<el-form-item class="query-form-item">
-				<el-date-picker v-model="timeList" value-format="timestamp" @change="changeTime" type="daterange" range-separator="-" class="width300" start-placeholder="开始日期" end-placeholder="结束日期">
-				</el-date-picker>
+				<el-date-picker v-model="timeList" value-format="timestamp" @change="changeTime" type="daterange" range-separator="-" class="width300" :picker-options="pickerOptions" unlink-panels start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
 			</el-form-item>
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
-					<el-button type="primary" icon="el-icon-document-copy" v-print="'#printTest'" v-if="IsPC()">打印</el-button>
+					<el-button type="primary" icon="el-icon-document-copy" @click="printView" v-if="IsPC()">打印</el-button>
 				</el-button-group>
 			</el-form-item>
 		</el-form>
-		<el-table id="printTest" class="common-table" v-loading="loading" :data="list" style="width: 100%;" ref="table" max-height="1000px">
-			<el-table-column label="项目名称" align="center" prop="name" min-width="100px"></el-table-column>
-			<el-table-column :label="item.name" v-if="options.length" v-for="(item,index) in options" :key="index" width="80px" align="center">
+		<vue-easy-print :tableShow="false" ref="easyPrint" :onePageRow="10">
+			<template>
+				<printProject :list="newList" :options="options"></printProject>
+			</template>
+		</vue-easy-print>
+		<el-table id="printTest" class="common-table" v-loading="loading" :data="newList" style="width: 100%;" ref="table" max-height="1000px">
+			<el-table-column :label="item.name" v-if="options.length" v-for="(item,index) in options" :key="index" align="center">
 				<template slot-scope="scope">
 					<span>{{scope.row.typelist[index]}}</span>
 				</template>
 			</el-table-column>
-			<el-table-column label="合计" align="center" min-width="60px" fixed="right">
-				<template slot-scope="scope">
-					<span>{{scope.row.typelist[scope.row.typelist.length-1]}}</span>
-				</template>
-			</el-table-column>
 		</el-table>
-		<div class="el-table default-table" ref="table1">
-			<span class="table-tr">合计</span>
-			<span v-for="(item,index) in totalList" class="table-tr" :key="index">{{item}}</span>
-		</div>
 		<el-pagination :page-size="query.limit" @current-change="handleCurrentChange" layout="prev, pager, next,total" :total="total"></el-pagination>
 	</div>
 </template>
@@ -40,15 +34,32 @@ import {
 	listCount
 } from "../../api/workman/index";
 import { geTypeAll } from "../../api/file/data"
+import printProject from "../../components/printProject.vue";
+import vueEasyPrint from "../../components/vue-easy-print";
 export default {
+	components: {
+		printProject: printProject,
+		vueEasyPrint: vueEasyPrint
+	},
 	data () {
 		return {
 			query: {
 				keyword: '',
 				page: 1,
-				limit: 20,
+				limit: 10,
 				starttime: '',
 				enttime: ''
+			},
+			pickerOptions: {
+				shortcuts: [{
+					text: '最近一个月',
+					onClick (picker) {
+						const end = new Date();
+						const start = new Date();
+						start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+						picker.$emit('pick', [start, end]);
+					}
+				}]
 			},
 			list: [],
 			value: '',
@@ -58,13 +69,17 @@ export default {
 			options: [],
 			typelist: [],
 			totalList: [],
-			timeList: []
+			timeList: [],
+			newList: []
 		};
 	},
 	methods: {
+		printView () {
+			this.$refs.easyPrint.print()
+		},
 		changeTime (value) {
-			this.params.starttime = value[0] ? value[0] : ''
-			this.params.endtime = value[1] ? value[1] : ''
+			this.query.starttime = value ? value[0] : ''
+			this.query.endtime = value ? value[1] : ''
 		},
 		onReset () {
 			this.query = {
@@ -98,20 +113,27 @@ export default {
 			this.query.page = val;
 			this.getList();
 		},
+		getNewList (list) {
+			let arr = []
+			arr = list.map(item => {
+				item.typelist.unshift(item.name)
+				return { typelist: item.typelist }
+			})
+			this.totalList.unshift('合计')
+			arr.push({ typelist: this.totalList })
+			return arr
+		},
 		getList () {
+			this.newList = []
+			this.totalList = []
 			this.loading = true;
 			listCount(this.query)
 				.then(response => {
 					this.loading = false;
-					this.totalList = response.total
-					this.list = response.data || [];
+					this.totalList = response.total || []
+					let list = response.data || []
 					this.total = response.count || 0;
-					this.options = [{ "id": 7, "name": "管理人员", "pid": 3 }, { "id": 8, "name": "瓦工", "pid": 3 }, { "id": 9, "name": "钢筋工", "pid": 3 }, { "id": 10, "name": "木工", "pid": 3 }, { "id": 11, "name": "架子工", "pid": 3 }, { "id": 12, "name": "水暖工", "pid": 3 }, { "id": 13, "name": "电工", "pid": 3 }, { "id": 14, "name": "起重司机", "pid": 3 }, { "id": 15, "name": "模板工", "pid": 3 }, { "id": 28, "name": "混泥土工", "pid": 3 }, { "id": 29, "name": "临工", "pid": 3 }, { "id": 30, "name": "其他", "pid": 3 }, { "id": 32, "name": "焊工", "pid": 3 }, { "id": 33, "name": "信号司索工", "pid": 3 }]
-					this.$nextTick(() => {
-						let dom = this.$refs.table
-						let table = dom
-						console.log(this.$refs.table)
-					})
+					this.newList = this.getNewList(list)
 				})
 				.catch(() => {
 					this.loading = false;
@@ -127,36 +149,40 @@ export default {
 		this.query = Object.assign(this.query, query);
 		this.query.limit = parseInt(this.query.limit);
 		// 加载表格数据
+		// this.options = [{ "id": 7, "name": "管理人员", "pid": 3 }, { "id": 8, "name": "瓦工", "pid": 3 }, { "id": 9, "name": "钢筋工", "pid": 3 }, { "id": 10, "name": "木工", "pid": 3 }, { "id": 11, "name": "架子工", "pid": 3 }, { "id": 12, "name": "水暖工", "pid": 3 }, { "id": 13, "name": "电工", "pid": 3 }, { "id": 14, "name": "起重司机", "pid": 3 }, { "id": 15, "name": "模板工", "pid": 3 }, { "id": 28, "name": "混泥土工", "pid": 3 }, { "id": 29, "name": "临工", "pid": 3 }, { "id": 30, "name": "其他", "pid": 3 }, { "id": 32, "name": "焊工", "pid": 3 }, { "id": 33, "name": "信号司索工", "pid": 3 }]
+		// this.options.unshift({ name: '项目名称' })
+		// this.options.push({ name: '合计' })
+		this.getType(3).then(res => {
+			this.options = res || []
+			this.options.unshift({ name: '项目名称' })
+			this.options.push({ name: '合计' })
+		})
 		this.getList();
-		// this.getType(3).then(res => {
-		// 		this.options = res || []
-		// 	})
 	}
 }
-
 </script>
 <style lang="scss">
 .el-table {
-	&.default-table{
-		font-size: 14px;
-		color: #606266;
-		line-height: 32px;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		.table-tr {
-			display: block;
-			flex: auto;
-			padding:12px;
-			text-align: center;
-			line-height: 23px;
-			&:nth-last-of-type(1) {
-				min-width: 60px;
-			}
-			&:nth-of-type(1){
-				min-width: 100px;
-			}
-		}
-	}
+  &.default-table {
+    font-size: 14px;
+    color: #606266;
+    line-height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .table-tr {
+      display: block;
+      flex: auto;
+      padding: 12px;
+      text-align: center;
+      line-height: 23px;
+      &:nth-last-of-type(1) {
+        min-width: 60px;
+      }
+      &:nth-of-type(1) {
+        min-width: 100px;
+      }
+    }
+  }
 }
 </style>
