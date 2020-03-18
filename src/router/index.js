@@ -118,30 +118,30 @@ export const manageRouter = [{
       component: staffManage
     }]
   },
-  // {
-  //   path: "/equipment",
-  //   component: Home,
-  //   redirect: "/readme/main",
-  //   icon: "shebeiguanli",
-  //   name: "起重设备管理",
-  //   noDropdown: true,
-  //   children: [{
-  //     path: 'equipment',
-  //     component: equipment
-  //   }]
-  // },
-  // {
-  //   path: "/matterManage",
-  //   component: Home,
-  //   redirect: "/readme/main",
-  //   icon: "daibanshixiang",
-  //   name: "事项管理",
-  //   noDropdown: true,
-  //   children: [{
-  //     path: 'matterManage',
-  //     component: matterManage
-  //   }]
-  // },
+  {
+    path: "/equipment",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "shebeiguanli",
+    name: "起重设备管理",
+    noDropdown: true,
+    children: [{
+      path: 'equipment',
+      component: equipment
+    }]
+  },
+  {
+    path: "/matterManage",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "daibanshixiang",
+    name: "事项管理",
+    noDropdown: true,
+    children: [{
+      path: 'matterManage',
+      component: matterManage
+    }]
+  },
   {
     path: "/project",
     component: Home,
@@ -192,18 +192,18 @@ export const workerRouter = [{
       component: staffManage
     }]
   },
-  // {
-  //   path: "/matterManage",
-  //   component: Home,
-  //   redirect: "/readme/projectDetail",
-  //   icon: "daibanshixiang",
-  //   name: "事项管理",
-  //   noDropdown: true,
-  //   children: [{
-  //     path: 'matterManage',
-  //     component: matterManage
-  //   }]
-  // }
+  {
+    path: "/matterManage",
+    component: Home,
+    redirect: "/readme/projectDetail",
+    icon: "daibanshixiang",
+    name: "事项管理",
+    noDropdown: true,
+    children: [{
+      path: 'matterManage',
+      component: matterManage
+    }]
+  }
 ]
 export default new VueRouter({
   // mode: 'history', //后端支持可开

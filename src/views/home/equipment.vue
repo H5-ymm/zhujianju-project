@@ -2,10 +2,10 @@
 	<div>
 		<el-form :inline="true" :model="query" class="query-form">
 			<el-form-item class="query-form-item">
-				<el-input v-model="query.keyword" class="width200" placeholder="设备编号"></el-input>
+				<el-input v-model="query.keyword" class="width200" placeholder="请输入设备编号"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<el-select v-model="query.type" filterable class="width240" placeholder="请选择项目名称">
+				<el-select v-model="query.item_id" filterable class="width300" placeholder="请选择项目名称">
 					<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>
 			</el-form-item>
@@ -25,6 +25,7 @@
 			<el-form-item>
 				<el-button-group>
 					<el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
+					<el-button type="primary" icon="el-icon-refresh" @click="onReset">重置</el-button>
 					<el-button type="primary" icon="el-icon-plus" @click.native="handleForm(null, null)">新增</el-button>
 				</el-button-group>
 			</el-form-item>
@@ -44,12 +45,12 @@
 			max-height="1000px"
 		>
 			<el-table-column label="起重设备编号" align="center" prop="number" width="110px"></el-table-column>
-			<el-table-column label="设备类型" prop="name" width="110px" align="center"></el-table-column>
-			<el-table-column label="项目名称" prop="type" min-width="110px" align="center"></el-table-column>
+			<el-table-column label="设备类型" prop="type" width="110px" align="center"></el-table-column>
+			<el-table-column label="项目名称" prop="name" min-width="110px" align="center"></el-table-column>
 			<el-table-column label="报备日期" width="170px" align="center">
 				<template slot-scope="scope">
 					<span>
-						{{scope.row.endtime?
+						{{scope.row.report_date?
 						$moment.unix(scope.row.report_date).format('YYYY-MM-DD'):''}}
 					</span>
 				</template>
@@ -57,7 +58,7 @@
 			<el-table-column label="到检日期" width="110px" align="center">
 				<template slot-scope="scope">
 					<span>
-						{{scope.row.endtime?
+						{{scope.row.check_date?
 						$moment.unix(scope.row.check_date).format('YYYY-MM-DD'):''}}
 					</span>
 				</template>
@@ -111,19 +112,19 @@
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="设备类型" prop="name">
-					<el-select v-model="formData.name" :disabled="readonly" class="width240" placeholder="请选择设备类型">
+				<el-form-item label="设备类型" prop="type">
+					<el-select v-model="formData.type" :disabled="readonly" class="width240" placeholder="请选择设备类型">
 						<el-option v-for="item in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="项目名称" prop="type">
-					<el-select v-model="query.type" filterable class="width240" placeholder="请选择项目名称">
+				<el-form-item label="项目名称" prop="item_id">
+					<el-select v-model="formData.item_id" filterable class="width240" placeholder="请选择项目名称">
 						<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="报备日期" prop="report_date">
 					<el-date-picker
-						v-model="query.report_date"
+						v-model="formData.report_date"
 						class="width240"
 						value-format="timestamp"
 						type="date"
@@ -132,7 +133,7 @@
 				</el-form-item>
 				<el-form-item label="检查日期" prop="check_date">
 					<el-date-picker
-						v-model="query.check_date"
+						v-model="formData.check_date"
 						value-format="timestamp"
 						type="date"
 						class="width240"
@@ -143,7 +144,7 @@
 					<el-input
 						class="width240"
 						:readonly="readonly"
-						placeholder="请输入紧急联系人"
+						placeholder="请输入司机姓名"
 						v-model="formData.driver"
 						auto-complete="off"
 					></el-input>
@@ -180,9 +181,8 @@ import { geTypeAll } from "../../api/file/data"
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
 const formJson = {
-	name: "",
+	item_id: "",
 	number: "",
-	tel: '',
 	type: '',
 	report_date: '',
 	check_date: '',
@@ -205,7 +205,7 @@ export default {
 				limit: 10,
 				starttime: '',
 				endtime: '',
-				type: ''
+				item_id: ''
 			},
 			list: [],
 			value: '',
@@ -227,11 +227,17 @@ export default {
 				number: [
 					{ required: true, message: "请输入设备编码", trigger: "blur" },
 				],
-				name: [
-					{ required: true, message: "请选择设备类型", trigger: "change" }
-				],
 				type: [
 					{ required: true, message: "请选择设备类型", trigger: "change" }
+				],
+				item_id: [
+					{ required: true, message: "请选择项目名称", trigger: "change" }
+				],
+				report_date: [
+					{ required: true, message: "请选择报备日期", trigger: "change" }
+				],
+				check_date: [
+					{ required: true, message: "请选择检查日期", trigger: "change" }
 				],
 				driver: [
 					{ required: true, message: "请输入司机姓名", trigger: "blur" },
@@ -287,8 +293,11 @@ export default {
 				limit: 10,
 				starttime: '',
 				endtime: '',
-				type: ''
+				item_id: ''
 			};
+			this.$router.push({
+				path: ""
+			});
 			this.getList();
 		},
 		getType(pid) {
@@ -347,7 +356,7 @@ export default {
 			this.readonly = false
 			this.formVisible = !this.formVisible;
 			// 清空表单
-			this.$refs["dataForm"].resetFields();
+			this.resetForm();
 			return true;
 		},
 		// 显示表单
@@ -397,7 +406,11 @@ export default {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
 					this.formLoading = true;
-					let data = Object.assign({}, this.formData);
+					let report_date = this.formData.report_date + ''
+					report_date = report_date.substring(0, 10)
+					let check_date = this.formData.check_date + ''
+					check_date = check_date.substring(0, 10)
+					let data = Object.assign({}, this.formData, { check_date, report_date });
 					if (!data.id) {
 						this.addUser(data)
 					} else {

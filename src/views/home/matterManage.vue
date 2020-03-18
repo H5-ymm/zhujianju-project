@@ -149,7 +149,11 @@
 						:limit="5"
 						action="customize"
 						ref="upload"
-						:show-file-list="false"
+						list-type="picture-card"
+						:multiple="true"
+						:data="uploadData"
+						accept="bmg, .png, .jpg, .jpeg"
+						:before-upload="beforeUpload"
 						:http-request="upload"
 						@on-exceed="onExceed"
 					>
@@ -170,13 +174,16 @@
 						</div>
 					</el-upload>
 				</el-form-item>
-				<el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
+				<!-- <el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
 					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
 					<el-upload
 						:limit="5"
 						action="customize"
 						ref="upload"
-						:show-file-list="false"
+						list-type="picture-card"
+						:multiple="true"
+						accept="bmg, .png, .jpg, .jpeg"
+						:before-upload="beforeUpload"
 						:http-request="upload"
 						@on-exceed="onExceed"
 					>
@@ -196,7 +203,8 @@
 							</div>
 						</div>
 					</el-upload>
-				</el-form-item>
+				</el-form-item>-->
+
 				<el-form-item label="整改意见" v-if="itemId&&is_wmadmin" prop="suggestion">
 					<el-input
 						class="width240"
@@ -253,10 +261,11 @@ import {
 	getItemmanageDetail
 } from "../../api/matter/index";
 import matterDetail from "../../components/modal/matterDetail.vue";
-import { geTypeAll } from "../../api/file/data"
+import { geTypeAll, uploadF } from "../../api/file/data"
 import { getImg } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
+import imageConversion from 'image-conversion'
 const formJson = {
 	title: "",
 	description: "",
@@ -312,7 +321,8 @@ export default {
 			deleteLoading: false,
 			checkObj: {},
 			readonly: false,
-			checkStatus: 1
+			checkStatus: 1,
+			uploadData: {}
 		};
 	},
 	computed: {
@@ -335,7 +345,37 @@ export default {
 		onExceed() {
 			this.$message.error("最多上传5张")
 		},
-		upload() { },
+		upload(params) {
+			console.log(this.uploadData)
+			const _file = params.file;
+			const isLt2M = _file.size / 1024 / 1024 < 5;
+			if (!isLt2M) {
+				this.$message.error("请上传5M以下图片");
+				return false;
+			}
+			let arr = []
+			arr.push(_file)
+			console.log(arr)
+			uploadF(arr).then(res => {
+				console.log(res)
+				this.formData.wg_img = res.url
+				console.log(this.formData.wg_img)
+				this.fileList.push(getImg(res.url))
+			})
+		},
+		beforeUpload(file) {
+			return new Promise((resolve, reject) => {
+				let isLt2M = file.size / 1024 / 1024 < 5// 判定图片大小是否小于4MB
+				if (isLt2M) {
+					resolve(file)
+				}
+				// 压缩到400KB,这里的400就是要压缩的大小,可自定义
+				imageConversion.compressAccurately(file, 400).then(res => {
+					// console.log(res)
+					resolve(res)
+				})
+			})
+		},
 		printView() {
 			this.$refs.easyPrint.print()
 		},
@@ -551,6 +591,23 @@ export default {
 .el-dialog {
   .el-radio {
     margin-right: 10px;
+  }
+  .el-upload-card,
+  .el-upload {
+    width: 100%;
+  }
+  .x-flex-start {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .x-flex-wrap {
+    flex-wrap: wrap;
+  }
+  .el-upload-list--picture-card .el-upload-list__item {
+    width: 90px;
+    height: 90px;
+    line-height: 88px;
   }
   .el-upload--picture-card {
     width: 90px;

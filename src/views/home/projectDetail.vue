@@ -18,7 +18,7 @@
 					</el-form-item>
 					<el-form-item label="工程地点" required>
 						<div class="width240 select-input">
-							<el-input v-model="formData.address" readonly></el-input>
+							<el-input v-model="address" readonly></el-input>
 						</div>
 						<el-input v-model="formData.address" class="width240" readonly></el-input>
 					</el-form-item>

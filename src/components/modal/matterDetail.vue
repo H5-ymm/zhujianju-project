@@ -17,24 +17,24 @@
 			v-if="formData"
 		>
 			<el-form-item label="事项名称">
-				<el-input v-model="formData.title" class="width240" readonly></el-input>
+				<el-input v-model="formData.title" class="width300" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="内容描述">
-				<el-input class="width240" readonly type="textarea" :rows="3" v-model="formData.description"></el-input>
+				<el-input class="width300" readonly type="textarea" :rows="3" v-model="formData.description"></el-input>
 			</el-form-item>
 			<el-form-item label="违规照片">
-				<div class="width240">
+				<div class="width300">
 					<img src="" alt="照片" class="img-icon">
 				</div>
 			</el-form-item>
 			<el-form-item label="整改照片">
-				<el-input class="width240" v-model="formData.link_tel" readonly></el-input>
+				<el-input class="width300" v-model="formData.link_tel" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="整改意见">
-				<el-input class="width240" readonly type="textarea" :rows="3" v-model="formData.suggestion"></el-input>
+				<el-input class="width300" readonly type="textarea" :rows="3" v-model="formData.suggestion"></el-input>
 			</el-form-item>
 			<el-form-item label="处理状态" v-if="itemId">
-				<el-radio-group class="width240" v-model="formData.status">
+				<el-radio-group class="width300" v-model="formData.status">
 					<el-radio :label="1" :disabled="is_wmadmin==1">待整改</el-radio>
 					<el-radio :label="2" :disabled="is_wmadmin==1">待审核</el-radio>
 					<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
@@ -42,7 +42,7 @@
 				</el-radio-group>
 			</el-form-item>
 			<el-form-item label="监督组">
-				<el-input class="width240" v-model="formData.Supervisiongroup" readonly></el-input>
+				<el-input class="width300" v-model="formData.Supervisiongroup" readonly></el-input>
 			</el-form-item>
 		</el-form>
 	</el-dialog>
