@@ -88,10 +88,10 @@ export function uploadFile(params) {
     console.log(`${BASE_URL}/Uploadimg/moreupload`)
     service.post(`${BASE_URL}/Uploadimg/moreupload`, file)
       .then(res => {
-        resolve(res.data)
+        resolve(res)
       })
       .catch(err => {
-        reject(err.data)
+        reject(err)
       })
   });
 }
