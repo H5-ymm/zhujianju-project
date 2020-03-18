@@ -37,8 +37,8 @@
 				<el-radio-group class="width300" v-model="formData.status">
 					<el-radio :label="1" :disabled="is_wmadmin==1">待整改</el-radio>
 					<el-radio :label="2" :disabled="is_wmadmin==1">待审核</el-radio>
-					<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
-					<el-radio :label="4" :disabled="readonly" v-if="!is_wmadmin">已退回</el-radio>
+					<el-radio :label="3" disabled v-if="!is_wmadmin">已整改</el-radio>
+					<el-radio :label="4" disabled v-if="!is_wmadmin">已退回</el-radio>
 				</el-radio-group>
 			</el-form-item>
 			<el-form-item label="监督组">

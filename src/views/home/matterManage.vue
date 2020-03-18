@@ -94,7 +94,7 @@
 			:title="formMap[formName]"
 			:visible.sync="formVisible"
 			:before-close="hideForm"
-			width="40%"
+			width="50%"
 			top="5vh"
 			class="form-dialog"
 		>
@@ -109,7 +109,7 @@
 			>
 				<el-form-item label="事项名称" prop="title">
 					<el-input
-						class="width240"
+						class="width300"
 						:readonly="readonly"
 						placeholder="请输入事项名称"
 						v-model="formData.title"
@@ -117,13 +117,13 @@
 					></el-input>
 				</el-form-item>
 				<el-form-item label="项目名称" prop="item_id">
-					<el-select v-model="formData.item_id" filterable class="width240" placeholder="请选择项目名称">
+					<el-select v-model="formData.item_id" filterable class="width300" placeholder="请选择项目名称">
 						<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="内容描述" prop="description">
 					<el-input
-						class="width240"
+						class="width300"
 						:readonly="readonly"
 						type="textarea"
 						:rows="3"
@@ -163,7 +163,7 @@
 						</div>
 					</el-upload>
 				</el-form-item>
-				<el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
+				<el-form-item label="整改照片" required v-if="itemId&&!is_wmadmin">
 					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
 					<el-upload
 						:limit="5"
@@ -196,7 +196,7 @@
 				</el-form-item>
 				<el-form-item label="整改意见" v-if="itemId&&!is_wmadmin" prop="suggestion">
 					<el-input
-						class="width240"
+						class="width300"
 						type="textarea"
 						:rows="3"
 						:readonly="readonly"
@@ -206,16 +206,16 @@
 					></el-input>
 				</el-form-item>
 				<el-form-item label="处理状态" v-if="itemId!=''">
-					<el-radio-group class="width240" v-model="formData.status">
+					<el-radio-group class="width300" v-model="formData.status">
 						<el-radio :label="1" :disabled="readonly&&is_wmadmin==1">待整改</el-radio>
-						<el-radio :label="2" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
+						<el-radio :label="2" v-if="is_wmadmin==1" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
 						<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
 						<el-radio :label="4" :disabled="readonly" v-if="!is_wmadmin">已退回</el-radio>
 					</el-radio-group>
 				</el-form-item>
 				<el-form-item label="监督组" prop="Supervisiongroup">
 					<el-input
-						class="width240"
+						class="width300"
 						:readonly="readonly"
 						placeholder="请输入监督组"
 						v-model="formData.Supervisiongroup"
@@ -389,6 +389,19 @@ export default {
 				})
 			})
 		},
+		beforeUpload1(file) {
+			return new Promise((resolve, reject) => {
+				let isLt2M = file.size / 1024 / 1024 < 5// 判定图片大小是否小于4MB
+				if (isLt2M) {
+					resolve(file)
+				}
+				// 压缩到400KB,这里的400就是要压缩的大小,可自定义
+				imageConversion.compressAccurately(file, 400).then(res => {
+					// console.log(res)
+					resolve(res)
+				})
+			})
+		},
 		printView() {
 			this.$refs.easyPrint.print()
 		},
@@ -465,6 +478,7 @@ export default {
 			this.formVisible = true;
 			this.formData = JSON.parse(JSON.stringify(formJson));
 			if (row !== null) {
+				this.itemId = row.id
 				this.formData = Object.assign({}, row);
 				if (row.provinceid) {
 					this.getDetail(row.id)
@@ -487,7 +501,7 @@ export default {
 			})
 		},
 		viewDetail(index, row) {
-			this.itemId = row.item_id
+			this.itemId = row.id
 			this.formDetailVisible = true
 		},
 		handleClose() {
