@@ -23,22 +23,39 @@
 				<el-input class="width300" readonly type="textarea" :rows="3" v-model="formData.description"></el-input>
 			</el-form-item>
 			<el-form-item label="违规照片">
-				<div class="width300">
-					<img src="" alt="照片" class="img-icon">
+				<div class="x-flex-start x-flex-wap">
+					<img
+						v-if="formData.wg_img.length"
+						v-for="item in formData.wg_img"
+						class="el-upload--picture-card"
+						:src="item"
+						:key="item"
+						alt=""
+					>
 				</div>
 			</el-form-item>
+			<br>
 			<el-form-item label="整改照片">
-				<el-input class="width300" v-model="formData.link_tel" readonly></el-input>
+				<div class="x-flex-start x-flex-wap">
+					<img
+						v-if="formData.zg_img.length"
+						v-for="item in formData.zg_img"
+						class="el-upload--picture-card"
+						:src="item"
+						:key="item"
+						alt=""
+					>
+				</div>
 			</el-form-item>
 			<el-form-item label="整改意见">
 				<el-input class="width300" readonly type="textarea" :rows="3" v-model="formData.suggestion"></el-input>
 			</el-form-item>
-			<el-form-item label="处理状态" v-if="itemId">
+			<el-form-item label="处理状态">
 				<el-radio-group class="width300" v-model="formData.status">
-					<el-radio :label="1" :disabled="is_wmadmin==1">待整改</el-radio>
-					<el-radio :label="2" :disabled="is_wmadmin==1">待审核</el-radio>
-					<el-radio :label="3" disabled v-if="!is_wmadmin">已整改</el-radio>
-					<el-radio :label="4" disabled v-if="!is_wmadmin">已退回</el-radio>
+					<el-radio :label="1" disabled>待整改</el-radio>
+					<el-radio :label="2" disabled>待审核</el-radio>
+					<el-radio :label="3" disabled>已整改</el-radio>
+					<el-radio :label="4" disabled>已退回</el-radio>
 				</el-radio-group>
 			</el-form-item>
 			<el-form-item label="监督组">
@@ -90,6 +107,23 @@ export default {
       height: 80px;
       margin-right: 5px;
     }
+  }
+  .el-upload-card,
+  .el-upload {
+    width: 100%;
+  }
+  .x-flex-start {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .x-flex-wrap {
+    flex-wrap: wrap;
+  }
+  .el-upload--picture-card {
+    width: 90px;
+    height: 90px;
+    line-height: 88px;
   }
 }
 </style>

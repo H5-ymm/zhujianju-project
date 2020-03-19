@@ -37,6 +37,7 @@
 			max-height="1000px"
 		>
 			<el-table-column label="事项名称" align="center" prop="title" width="110px"></el-table-column>
+			<el-table-column label="项目名称" align="center" prop="name" width="110px"></el-table-column>
 			<el-table-column label="内容描述" prop="description" width="110px" align="center"></el-table-column>
 			<el-table-column label="违规照片" min-width="110px" align="center">
 				<template slot-scope="scope">
@@ -57,7 +58,7 @@
 			<el-table-column label="整改照片" width="110px" align="center">
 				<template slot-scope="scope">
 					<div>
-						<img :src="getImg(scope.row.zg_img)" v-if="scope.row.zg_img" class="qrcode" alt="">
+						<img :src="scope.row.zg_img" v-if="scope.row.zg_img" class="qrcode" alt="">
 					</div>
 				</template>
 			</el-table-column>
@@ -110,21 +111,27 @@
 				<el-form-item label="事项名称" prop="title">
 					<el-input
 						class="width300"
-						:readonly="readonly"
+						:readonly="formData.status==3||is_wmadmin==1"
 						placeholder="请输入事项名称"
 						v-model="formData.title"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
 				<el-form-item label="项目名称" prop="item_id">
-					<el-select v-model="formData.item_id" filterable class="width300" placeholder="请选择项目名称">
+					<el-select
+						v-model="formData.item_id"
+						:disabled="formData.status==3||is_wmadmin==1"
+						filterable
+						class="width300"
+						placeholder="请选择项目名称"
+					>
 						<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="内容描述" prop="description">
 					<el-input
 						class="width300"
-						:readonly="readonly"
+						:readonly="formData.status==3||is_wmadmin==1"
 						type="textarea"
 						:rows="3"
 						placeholder="请输入内容描述"
@@ -132,18 +139,20 @@
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
+				<br>
 				<el-form-item label="违规照片" required>
-					<p class="prompt">最多上传5张</p>
+					<p class="prompt" v-if="!is_wmadmin">最多上传5张</p>
 					<el-upload
 						:limit="5"
 						action="customize"
 						ref="upload"
 						list-type="picture-card"
 						:multiple="true"
-						:data="uploadData"
+						:disabled="formData.status==3"
 						accept="bmg, .png, .jpg, .jpeg"
 						:before-upload="beforeUpload"
 						:http-request="upload"
+						v-if="!is_wmadmin"
 						@on-exceed="onExceed"
 					>
 						<div class="x-flex-start x-flex-wap el-upload-card">
@@ -151,7 +160,7 @@
 								<img
 									v-if="fileList.length"
 									v-for="item in fileList"
-									class="el-upload-list__item"
+									class="el-upload-list__item el-upload--picture-card"
 									:src="item"
 									:key="item"
 									alt=""
@@ -162,16 +171,28 @@
 							</div>
 						</div>
 					</el-upload>
+					<div class="x-flex-start x-flex-wap el-upload-card" v-else>
+						<img
+							v-if="fileList.length"
+							v-for="item in fileList"
+							class="el-upload--picture-card"
+							:src="item"
+							:key="item"
+							alt=""
+						>
+						<p class="prompt" v-if="fileList && fileList.length==0">无</p>
+					</div>
 				</el-form-item>
-				<el-form-item label="整改照片" required v-if="itemId&&!is_wmadmin">
-					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
+				<br>
+				<el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
+					<p class="prompt">最多上传5张</p>
 					<el-upload
 						:limit="5"
 						action="customize"
 						ref="upload"
 						list-type="picture-card"
 						:multiple="true"
-						:data="uploadData"
+						:disabled="formData.status==3"
 						accept="bmg, .png, .jpg, .jpeg"
 						:before-upload="beforeUpload1"
 						:http-request="upload1"
@@ -182,7 +203,7 @@
 								<img
 									v-if="uploadData.length"
 									v-for="item in uploadData"
-									class="el-upload-list__item"
+									class="el-upload-list__item el-upload--picture-card"
 									:src="item"
 									:key="item"
 									alt=""
@@ -194,29 +215,29 @@
 						</div>
 					</el-upload>
 				</el-form-item>
-				<el-form-item label="整改意见" v-if="itemId&&!is_wmadmin" prop="suggestion">
+				<el-form-item label="整改意见" v-if="itemId" prop="suggestion">
 					<el-input
 						class="width300"
 						type="textarea"
 						:rows="3"
-						:readonly="readonly"
-						placeholder="请输入监督组"
+						:readonly="is_wmadmin==1||formData.status==3"
+						placeholder="请输入整改意见"
 						v-model="formData.suggestion"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="处理状态" v-if="itemId!=''">
+				<el-form-item label="处理状态" v-if="itemId&&!is_wmadmin">
 					<el-radio-group class="width300" v-model="formData.status">
-						<el-radio :label="1" :disabled="readonly&&is_wmadmin==1">待整改</el-radio>
-						<el-radio :label="2" v-if="is_wmadmin==1" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
-						<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
-						<el-radio :label="4" :disabled="readonly" v-if="!is_wmadmin">已退回</el-radio>
+						<el-radio :label="1" :disabled="formData.status==3">待整改</el-radio>
+						<el-radio :label="2" disabled>待审核</el-radio>
+						<el-radio :label="3" :disabled="formData.status!=2">已整改</el-radio>
+						<el-radio :label="4" :disabled="formData.status<2">已退回</el-radio>
 					</el-radio-group>
 				</el-form-item>
 				<el-form-item label="监督组" prop="Supervisiongroup">
 					<el-input
 						class="width300"
-						:readonly="readonly"
+						:readonly="formData.status==3||is_wmadmin==1"
 						placeholder="请输入监督组"
 						v-model="formData.Supervisiongroup"
 						auto-complete="off"
@@ -229,7 +250,7 @@
 					type="primary"
 					@click.native="formSubmit()"
 					:loading="formLoading"
-					v-if="!readonly"
+					v-if="formData.status!=3"
 				>提交</el-button>
 			</div>
 		</el-dialog>
@@ -316,7 +337,7 @@ export default {
 			checkObj: {},
 			readonly: false,
 			checkStatus: 1,
-			uploadData: {},
+			uploadData: [],
 			projectList: []
 		};
 	},
@@ -350,7 +371,6 @@ export default {
 			})
 		},
 		upload(params) {
-			console.log(this.uploadData)
 			const _file = params.file;
 			const isLt2M = _file.size / 1024 / 1024 < 5;
 			if (!isLt2M) {
@@ -358,9 +378,14 @@ export default {
 				return false;
 			}
 			uploadF(_file).then(res => {
+				console.log(this.formData.wg_img.length)
 				this.fileList.push(getImg(res.url))
-				console.log(this.fileList)
-				this.formData.wg_img = this.fileList.splice(0)
+				if (this.formData.wg_img.length) {
+					this.formData.wg_img = [...this.fileList, ...this.formData.wg_img]
+				} else {
+					console.log(this.fileList)
+					this.formData.wg_img = this.fileList.splice(0)
+				}
 			})
 		},
 		upload1(params) {
@@ -372,8 +397,12 @@ export default {
 			}
 			uploadF(_file).then(res => {
 				this.uploadData.push(getImg(res.url))
-				console.log(this.uploadData)
-				this.formData.zg_img = this.uploadData.splice(0)
+				if (this.formData.zg_img.length) {
+					this.formData.zg_img = [...this.uploadData, ...this.formData.zg_img]
+
+				} else {
+					this.formData.zg_img = this.fileList.splice(0)
+				}
 			})
 		},
 		beforeUpload(file) {
@@ -442,13 +471,11 @@ export default {
 			this.loading = true;
 			getItemmanage(this.query)
 				.then(response => {
-					this.readonly = false
 					this.loading = false;
 					this.list = response.data || [];
 					this.total = response.count || 0;
 				})
 				.catch(() => {
-					this.readonly = false
 					this.loading = false;
 					this.list = [];
 					this.total = 0;
@@ -479,10 +506,7 @@ export default {
 			this.formData = JSON.parse(JSON.stringify(formJson));
 			if (row !== null) {
 				this.itemId = row.id
-				this.formData = Object.assign({}, row);
-				if (row.provinceid) {
-					this.getDetail(row.id)
-				}
+				this.getDetail(row.id)
 			}
 			this.formName = "add";
 			this.formRules = this.addRules;
@@ -494,10 +518,12 @@ export default {
 		},
 		getDetail(id) {
 			getItemmanageDetail({ id }).then(res => {
-				if (res.provinceid) {
-					this.address = [res.provinceid, res.cityid, res.areaid]
-				}
 				this.formData = res
+				this.formData.wg_img = res.wg_img || []
+				this.formData.zg_img = res.zg_img || []
+				this.fileList = res.wg_img || []
+				console.log(this.fileList)
+				this.uploadData = res.zg_img || []
 			})
 		},
 		viewDetail(index, row) {
@@ -523,13 +549,22 @@ export default {
 		formSubmit() {
 			this.$refs["dataForm"].validate(valid => {
 				if (valid) {
+					if (!this.is_wmadmin && !this.formData.wg_img.length) {
+						return this.$message.warning('请上传违规照片')
+					}
 					this.formLoading = true;
 					let data = Object.assign({}, this.formData);
 					if (!data.id) {
 						this.addUser(data)
 					} else {
+						if (this.is_wmadmin == 1) {
+							data.wg_img = this.fileList
+						}
 						updateItemmanage(data).then(response => {
 							if (response) {
+								if (response.code) {
+									return this.$message.error(response.message)
+								}
 								this.formLoading = false;
 								this.$message.success("操作成功");
 								this.formVisible = false;
@@ -598,6 +633,14 @@ export default {
   .el-radio {
     margin-right: 10px;
   }
+  .prompt {
+    width: 200px;
+  }
+  .el-textarea__inner {
+    &:focus {
+      padding: 5px 15px;
+    }
+  }
   .el-upload-card,
   .el-upload {
     width: 100%;
@@ -610,6 +653,9 @@ export default {
   .x-flex-wrap {
     flex-wrap: wrap;
   }
+  .el-upload-list__item:first-child {
+    margin-top: 0;
+  }
   .el-upload-list--picture-card .el-upload-list__item {
     width: 90px;
     height: 90px;
@@ -619,6 +665,7 @@ export default {
     width: 90px;
     height: 90px;
     line-height: 88px;
+    margin-right: 5px;
   }
 }
 </style>
