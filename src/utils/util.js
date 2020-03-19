@@ -41,11 +41,11 @@ export const getQueryString = name => {
 }
 
 export const getImg = img => {
-  return 'http://www.tp1.cn/zhujianj/' + img
+  return 'http://jc.jcjzfwzx.com/' + img
 }
 
 export const locationUrl = state => {
-  let urlHome = encodeURIComponent('http://www.tp1.cn/dist/#/workerView')
+  let urlHome = encodeURIComponent('http://jc.jcjzfwzx.com/#/workerView')
   return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbe1948a3f8612f0d&redirect_uri=${urlHome}&response_type=code&scope=snsapi_userinfo&state=${state}&connect_redirect=1#wechat_redirect`
 }
 
