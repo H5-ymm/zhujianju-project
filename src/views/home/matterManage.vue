@@ -41,7 +41,7 @@
 			<el-table-column label="违规照片" min-width="110px" align="center">
 				<template slot-scope="scope">
 					<div>
-						<img :src="getImg(scope.row.wg_img)" v-if="scope.row.wg_img" class="qrcode" alt="">
+						<img :src="scope.row.wg_img" v-if="scope.row.wg_img" class="qrcode" alt="">
 					</div>
 				</template>
 			</el-table-column>
@@ -77,12 +77,6 @@
 			</el-table-column>
 			<el-table-column label="操作" class="no-print" align="center" min-width="120px" fixed="right">
 				<template slot-scope="scope">
-					<el-button
-						type="text"
-						size="small"
-						v-if="!is_wmadmin"
-						@click.native="switchCheck(scope.row)"
-					>审核</el-button>
 					<el-button type="text" size="small" @click.native="handleForm(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="text" size="small" @click.native="viewDetail(scope.$index, scope.row)">查看</el-button>
 					<!-- <el-button type="text" size="small" @click.native="handleDel(scope.$index, scope.row)">删除</el-button> -->
@@ -96,21 +90,11 @@
 			:total="total"
 		></el-pagination>
 		<!--表单-->
-		<el-dialog title="提示" :visible.sync="dialogVisible" width="36%" :before-close="handleClose">
-			<el-radio-group v-model="status">
-				<el-radio :label="1">通过</el-radio>
-				<el-radio :label="2">拒绝</el-radio>
-			</el-radio-group>
-			<span slot="footer" class="dialog-footer">
-				<el-button @click="dialogVisible = false">取 消</el-button>
-				<el-button type="primary" @click="handleCheck">确 定</el-button>
-			</span>
-		</el-dialog>
 		<el-dialog
 			:title="formMap[formName]"
 			:visible.sync="formVisible"
 			:before-close="hideForm"
-			width="40%"
+			width="50%"
 			top="5vh"
 			class="form-dialog"
 		>
@@ -125,16 +109,21 @@
 			>
 				<el-form-item label="事项名称" prop="title">
 					<el-input
-						class="width240"
+						class="width300"
 						:readonly="readonly"
 						placeholder="请输入事项名称"
 						v-model="formData.title"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
+				<el-form-item label="项目名称" prop="item_id">
+					<el-select v-model="formData.item_id" filterable class="width300" placeholder="请选择项目名称">
+						<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+					</el-select>
+				</el-form-item>
 				<el-form-item label="内容描述" prop="description">
 					<el-input
-						class="width240"
+						class="width300"
 						:readonly="readonly"
 						type="textarea"
 						:rows="3"
@@ -149,7 +138,11 @@
 						:limit="5"
 						action="customize"
 						ref="upload"
-						:show-file-list="false"
+						list-type="picture-card"
+						:multiple="true"
+						:data="uploadData"
+						accept="bmg, .png, .jpg, .jpeg"
+						:before-upload="beforeUpload"
 						:http-request="upload"
 						@on-exceed="onExceed"
 					>
@@ -170,21 +163,25 @@
 						</div>
 					</el-upload>
 				</el-form-item>
-				<el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
+				<el-form-item label="整改照片" required v-if="itemId&&!is_wmadmin">
 					<p class="prompt">最多5张,支持JPG、JPEG、PNG.大小不超过5MB</p>
 					<el-upload
 						:limit="5"
 						action="customize"
 						ref="upload"
-						:show-file-list="false"
-						:http-request="upload"
-						@on-exceed="onExceed"
+						list-type="picture-card"
+						:multiple="true"
+						:data="uploadData"
+						accept="bmg, .png, .jpg, .jpeg"
+						:before-upload="beforeUpload1"
+						:http-request="upload1"
+						@on-exceed="onExceed1"
 					>
 						<div class="x-flex-start x-flex-wap el-upload-card">
 							<div class="x-flex-start x-flex-wap">
 								<img
-									v-if="fileList.length"
-									v-for="item in fileList"
+									v-if="uploadData.length"
+									v-for="item in uploadData"
 									class="el-upload-list__item"
 									:src="item"
 									:key="item"
@@ -197,9 +194,9 @@
 						</div>
 					</el-upload>
 				</el-form-item>
-				<el-form-item label="整改意见" v-if="itemId&&is_wmadmin" prop="suggestion">
+				<el-form-item label="整改意见" v-if="itemId&&!is_wmadmin" prop="suggestion">
 					<el-input
-						class="width240"
+						class="width300"
 						type="textarea"
 						:rows="3"
 						:readonly="readonly"
@@ -208,17 +205,17 @@
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="处理状态" v-if="itemId">
-					<el-radio-group class="width240" v-model="formData.status">
+				<el-form-item label="处理状态" v-if="itemId!=''">
+					<el-radio-group class="width300" v-model="formData.status">
 						<el-radio :label="1" :disabled="readonly&&is_wmadmin==1">待整改</el-radio>
-						<el-radio :label="2" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
+						<el-radio :label="2" v-if="is_wmadmin==1" :disabled="readonly&&is_wmadmin==1">待审核</el-radio>
 						<el-radio :label="3" :disabled="readonly" v-if="!is_wmadmin">已整改</el-radio>
 						<el-radio :label="4" :disabled="readonly" v-if="!is_wmadmin">已退回</el-radio>
 					</el-radio-group>
 				</el-form-item>
 				<el-form-item label="监督组" prop="Supervisiongroup">
 					<el-input
-						class="width240"
+						class="width300"
 						:readonly="readonly"
 						placeholder="请输入监督组"
 						v-model="formData.Supervisiongroup"
@@ -253,15 +250,18 @@ import {
 	getItemmanageDetail
 } from "../../api/matter/index";
 import matterDetail from "../../components/modal/matterDetail.vue";
-import { geTypeAll } from "../../api/file/data"
+import { geTypeAll, uploadF } from "../../api/file/data"
 import { getImg } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
+import imageConversion from 'image-conversion'
+import { getNamelist } from "../../api/project/index";
 const formJson = {
 	title: "",
 	description: "",
-	wg_img: '',
-	Supervisiongroup: ''
+	wg_img: [],
+	Supervisiongroup: '',
+	item_id: ''
 };
 export default {
 	components: {
@@ -302,6 +302,9 @@ export default {
 				title: [
 					{ required: true, message: "请输入事项名称", trigger: "blur" },
 				],
+				item_id: [
+					{ required: true, message: "请选择项目名称", trigger: "change" }
+				],
 				description: [
 					{ required: true, message: "请输入内容描述", trigger: "change" }
 				],
@@ -312,7 +315,9 @@ export default {
 			deleteLoading: false,
 			checkObj: {},
 			readonly: false,
-			checkStatus: 1
+			checkStatus: 1,
+			uploadData: {},
+			projectList: []
 		};
 	},
 	computed: {
@@ -329,13 +334,74 @@ export default {
 		this.getType(3).then(res => {
 			this.options = res
 		})
+		this.getProject()
 	},
 	methods: {
 		getImg,
 		onExceed() {
 			this.$message.error("最多上传5张")
 		},
-		upload() { },
+		onExceed1() {
+			this.$message.error("最多上传5张")
+		},
+		getProject() {
+			getNamelist().then(res => {
+				this.projectList = res
+			})
+		},
+		upload(params) {
+			console.log(this.uploadData)
+			const _file = params.file;
+			const isLt2M = _file.size / 1024 / 1024 < 5;
+			if (!isLt2M) {
+				this.$message.error("请上传5M以下图片");
+				return false;
+			}
+			uploadF(_file).then(res => {
+				this.fileList.push(getImg(res.url))
+				console.log(this.fileList)
+				this.formData.wg_img = this.fileList.splice(0)
+			})
+		},
+		upload1(params) {
+			const _file = params.file;
+			const isLt2M = _file.size / 1024 / 1024 < 5;
+			if (!isLt2M) {
+				this.$message.error("请上传5M以下图片");
+				return false;
+			}
+			uploadF(_file).then(res => {
+				this.uploadData.push(getImg(res.url))
+				console.log(this.uploadData)
+				this.formData.zg_img = this.uploadData.splice(0)
+			})
+		},
+		beforeUpload(file) {
+			return new Promise((resolve, reject) => {
+				let isLt2M = file.size / 1024 / 1024 < 5// 判定图片大小是否小于4MB
+				if (isLt2M) {
+					resolve(file)
+				}
+				// 压缩到400KB,这里的400就是要压缩的大小,可自定义
+				imageConversion.compressAccurately(file, 400).then(res => {
+					// console.log(res)
+					resolve(res)
+				})
+			})
+		},
+		beforeUpload1(file) {
+			return new Promise((resolve, reject) => {
+				let isLt2M = file.size / 1024 / 1024 < 5// 判定图片大小是否小于4MB
+				if (isLt2M) {
+					resolve(file)
+				}
+				// 压缩到400KB,这里的400就是要压缩的大小,可自定义
+				imageConversion.compressAccurately(file, 400).then(res => {
+					// console.log(res)
+					resolve(res)
+				})
+			})
+		},
 		printView() {
 			this.$refs.easyPrint.print()
 		},
@@ -412,6 +478,7 @@ export default {
 			this.formVisible = true;
 			this.formData = JSON.parse(JSON.stringify(formJson));
 			if (row !== null) {
+				this.itemId = row.id
 				this.formData = Object.assign({}, row);
 				if (row.provinceid) {
 					this.getDetail(row.id)
@@ -437,33 +504,8 @@ export default {
 			this.itemId = row.id
 			this.formDetailVisible = true
 		},
-		switchCheck(item) {
-			this.checkStatus = 1
-			this.checkObj = item
-			this.dialogVisible = true
-		},
 		handleClose() {
 			this.dialogVisible = false
-		},
-		handleCheck() {
-			if (this.checkStatus == 1) {
-				let params = {
-					id: this.checkObj.wid,
-					status: this.status
-				}
-				this.formLoading = true;
-				saveStatus(params).then(response => {
-					if (response) {
-						this.formLoading = false;
-						this.$message.success("操作成功");
-						this.dialogVisible = false;
-						this.getList()
-					} else {
-						this.$message.error("操作失败");
-					}
-					this.resetForm();
-				});
-			}
 		},
 		addUser(data) {
 			addItemmanage(data).then(response => {
@@ -486,7 +528,7 @@ export default {
 					if (!data.id) {
 						this.addUser(data)
 					} else {
-						updateItemmanage(data, this.formName).then(response => {
+						updateItemmanage(data).then(response => {
 							if (response) {
 								this.formLoading = false;
 								this.$message.success("操作成功");
@@ -540,6 +582,10 @@ export default {
     }
   }
 }
+.qrcode {
+  width: 80px;
+  height: 80px;
+}
 .query-form {
   .el-input--suffix .el-input__inner {
     padding-right: 35px;
@@ -551,6 +597,23 @@ export default {
 .el-dialog {
   .el-radio {
     margin-right: 10px;
+  }
+  .el-upload-card,
+  .el-upload {
+    width: 100%;
+  }
+  .x-flex-start {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .x-flex-wrap {
+    flex-wrap: wrap;
+  }
+  .el-upload-list--picture-card .el-upload-list__item {
+    width: 90px;
+    height: 90px;
+    line-height: 88px;
   }
   .el-upload--picture-card {
     width: 90px;

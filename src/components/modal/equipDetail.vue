@@ -17,27 +17,27 @@
 			v-if="formData"
 		>
 			<el-form-item label="起重设备编号">
-				<el-input v-model="formData.number" class="width240" readonly></el-input>
+				<el-input v-model="formData.number" class="width300" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="设备类型">
-				<el-input v-model="formData.job_type_name" class="width240" readonly></el-input>
+				<el-input v-model="formData.item_name" class="width300" readonly></el-input>
 			</el-form-item>
 			<el-form-item label="报备日期">
 				<el-input
 					v-model="$moment.unix(formData.report_date).format('YYYY-MM-DD')"
-					class="width240"
+					class="width300"
 					readonly
 				></el-input>
 			</el-form-item>
 			<el-form-item label="到检日期">
 				<el-input
 					v-model="$moment.unix(formData.check_date).format('YYYY-MM-DD')"
-					class="width240"
+					class="width300"
 					readonly
 				></el-input>
 			</el-form-item>
 			<el-form-item label="司机">
-				<el-input class="width240" v-model="formData.driver" readonly></el-input>
+				<el-input class="width300" v-model="formData.driver" readonly></el-input>
 			</el-form-item>
 		</el-form>
 	</el-dialog>
