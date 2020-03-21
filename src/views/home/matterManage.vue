@@ -148,6 +148,7 @@
 						ref="upload"
 						list-type="picture-card"
 						:multiple="true"
+						:file-list="arr"
 						:disabled="formData.status==3"
 						accept="bmg, .png, .jpg, .jpeg"
 						:before-upload="beforeUpload"
@@ -174,10 +175,10 @@
 					<div class="x-flex-start x-flex-wap el-upload-card" v-else>
 						<img
 							v-if="fileList.length"
-							v-for="item in fileList"
+							v-for="(item,index) in fileList"
 							class="el-upload--picture-card"
 							:src="item"
-							:key="item"
+							:key="index"
 							alt=""
 						>
 						<p class="prompt" v-if="fileList && fileList.length==0">无</p>
@@ -202,10 +203,10 @@
 							<div class="x-flex-start x-flex-wap">
 								<img
 									v-if="uploadData.length"
-									v-for="item in uploadData"
+									v-for="(item,index) in uploadData"
 									class="el-upload-list__item el-upload--picture-card"
 									:src="item"
-									:key="item"
+									:key="index"
 									alt=""
 								>
 								<div class="el-upload--picture-card el-upload-list__item-thumbnail">
@@ -338,7 +339,8 @@ export default {
 			readonly: false,
 			checkStatus: 1,
 			uploadData: [],
-			projectList: []
+			projectList: [],
+			arr: []
 		};
 	},
 	computed: {
@@ -378,15 +380,16 @@ export default {
 				return false;
 			}
 			uploadF(_file).then(res => {
-				console.log(this.formData.wg_img.length)
-				this.fileList.push(getImg(res.url))
-				if (this.formData.wg_img.length) {
-					this.formData.wg_img = [...this.fileList, ...this.formData.wg_img]
+				let arr = []
+				arr.push(getImg(res.url))
+				if (this.formData.wg_img.length && this.itemId) {
+					this.formData.wg_img = [...arr, ...this.formData.wg_img]
 				} else {
-					console.log(this.fileList)
-					this.formData.wg_img = this.fileList.splice(0)
+					this.formData.wg_img = arr.splice(0)
 				}
 			})
+			this.formData.wg_img.splice(2)
+			console.log(this.formData.wg_img)
 		},
 		upload1(params) {
 			const _file = params.file;
@@ -397,13 +400,14 @@ export default {
 			}
 			uploadF(_file).then(res => {
 				this.uploadData.push(getImg(res.url))
-				if (this.formData.zg_img.length) {
-					this.formData.zg_img = [...this.uploadData, ...this.formData.zg_img]
 
-				} else {
-					this.formData.zg_img = this.fileList.splice(0)
-				}
 			})
+			if (this.formData.zg_img.length && this.itemId) {
+				this.formData.zg_img = [...this.uploadData, ...this.formData.zg_img]
+
+			} else {
+				this.formData.zg_img = this.fileList.splice(0)
+			}
 		},
 		beforeUpload(file) {
 			return new Promise((resolve, reject) => {
@@ -478,6 +482,8 @@ export default {
 				.catch(() => {
 					this.loading = false;
 					this.list = [];
+					this.fileList = []
+					this.uploadData = []
 					this.total = 0;
 				});
 		},
@@ -522,7 +528,6 @@ export default {
 				this.formData.wg_img = res.wg_img || []
 				this.formData.zg_img = res.zg_img || []
 				this.fileList = res.wg_img || []
-				console.log(this.fileList)
 				this.uploadData = res.zg_img || []
 			})
 		},
@@ -536,9 +541,14 @@ export default {
 		addUser(data) {
 			addItemmanage(data).then(response => {
 				if (response) {
+					if (response.code) {
+						return this.$message.error(response.message)
+					}
 					this.formLoading = false;
 					this.$message.success("操作成功");
 					this.formVisible = false;
+					this.fileList = []
+					this.uploadData = []
 					this.getList()
 				} else {
 					this.$message.error("操作失败");
@@ -556,6 +566,7 @@ export default {
 					let data = Object.assign({}, this.formData);
 					if (!data.id) {
 						this.addUser(data)
+						location.reload()
 					} else {
 						if (this.is_wmadmin == 1) {
 							data.wg_img = this.fileList
@@ -566,8 +577,10 @@ export default {
 									return this.$message.error(response.message)
 								}
 								this.formLoading = false;
+								location.reload()
 								this.$message.success("操作成功");
 								this.formVisible = false;
+								this.$set(this, 'fileList', [])
 								this.getList()
 							} else {
 								this.$message.error("操作失败");
