@@ -194,6 +194,18 @@ export const workerRouter = [{
     }]
   },
   {
+    path: "/equipment",
+    component: Home,
+    redirect: "/readme/main",
+    icon: "shebeiguanli",
+    name: "起重设备管理",
+    noDropdown: true,
+    children: [{
+      path: 'equipment',
+      component: equipment
+    }]
+  },
+  {
     path: "/matterManage",
     component: Home,
     redirect: "/readme/projectDetail",

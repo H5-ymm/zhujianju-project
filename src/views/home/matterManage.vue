@@ -193,6 +193,7 @@
 						ref="upload"
 						list-type="picture-card"
 						:multiple="true"
+						:file-list="arr1"
 						:disabled="formData.status==3"
 						accept="bmg, .png, .jpg, .jpeg"
 						:before-upload="beforeUpload1"
@@ -340,7 +341,8 @@ export default {
 			checkStatus: 1,
 			uploadData: [],
 			projectList: [],
-			arr: []
+			arr: [],
+			arr1: []
 		};
 	},
 	computed: {
@@ -399,15 +401,15 @@ export default {
 				return false;
 			}
 			uploadF(_file).then(res => {
-				this.uploadData.push(getImg(res.url))
+				let arr = []
+				arr.push(getImg(res.url))
+				if (this.formData.zg_img.length && this.itemId) {
+					this.formData.zg_img = [...arr, ...this.formData.zg_img]
 
+				} else {
+					this.formData.zg_img = arr.splice(0)
+				}
 			})
-			if (this.formData.zg_img.length && this.itemId) {
-				this.formData.zg_img = [...this.uploadData, ...this.formData.zg_img]
-
-			} else {
-				this.formData.zg_img = this.fileList.splice(0)
-			}
 		},
 		beforeUpload(file) {
 			return new Promise((resolve, reject) => {
