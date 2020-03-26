@@ -41,7 +41,7 @@ export const getQueryString = name => {
 }
 
 export const getImg = img => {
-  return 'http://www.tp1.cn/zjj/' + img
+  return 'http://b.jcjzfwzx.com/' + img
 }
 export const locationUrl = state => {
   let urlHome = encodeURIComponent('http://jc.jcjzfwzx.com/#/workerView')

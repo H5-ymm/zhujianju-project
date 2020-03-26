@@ -3,24 +3,25 @@ import store from "./store/index";
 import NProgress from "nprogress"; // Progress 进度条
 import "nprogress/nprogress.css"; // Progress 进度条样式
 import {
-    getAdminId
+  getAdminId
 } from "./utils/auth"; // 验权
 import {
-    Message
+  Message
 } from "element-ui";
 import {
-    workerRouter,
-    manageRouter,
-    asyncRouterMap
+  workerRouter,
+  manageRouter,
+  asyncRouterMap,
+  matterRouter
 } from "./router/index";
 // permissiom judge
-function hasRole (authRules, permissionAuthRules) {
-    if (!authRules || authRules.length <= 0) {
-        return false;
-    }
-    if (authRules.indexOf("admin") >= 0) return true; // admin权限 直接通过
-    if (!permissionAuthRules) return true;
-    return authRules.some(role => permissionAuthRules.indexOf(role) >= 0);
+function hasRole(authRules, permissionAuthRules) {
+  if (!authRules || authRules.length <= 0) {
+    return false;
+  }
+  if (authRules.indexOf("admin") >= 0) return true; // admin权限 直接通过
+  if (!permissionAuthRules) return true;
+  return authRules.some(role => permissionAuthRules.indexOf(role) >= 0);
 }
 
 /**
@@ -28,173 +29,177 @@ function hasRole (authRules, permissionAuthRules) {
  * @param authRules
  * @param route
  */
-function hasRouterRole (authRules, route) {
-    if (
-        authRules.indexOf("admin") >= 0 ||
-        !route.meta ||
-        !route.meta.authRule
-    ) {
-        return true;
-    }
-    return authRules.some(
-        authRule => route.meta.authRule.indexOf(authRule) >= 0
-    );
+function hasRouterRole(authRules, route) {
+  if (
+    authRules.indexOf("admin") >= 0 ||
+    !route.meta ||
+    !route.meta.authRule
+  ) {
+    return true;
+  }
+  return authRules.some(
+    authRule => route.meta.authRule.indexOf(authRule) >= 0
+  );
 }
 
-function hasRouterStaff (authRules, route) {
-    if (
-        authRules.indexOf("staff") >= 0 ||
-        !route.meta ||
-        !route.meta.authRule
-    ) {
-        return true;
-    }
-    return authRules.some(
-        authRule => route.meta.authRule.indexOf(authRule) >= 0
-    );
+function hasRouterStaff(authRules, route) {
+  if (
+    authRules.indexOf("staff") >= 0 ||
+    !route.meta ||
+    !route.meta.authRule
+  ) {
+    return true;
+  }
+  return authRules.some(
+    authRule => route.meta.authRule.indexOf(authRule) >= 0
+  );
 }
 /**
  * 递归过滤异步路由表，返回符合用户角色权限的路由表
  * @param asyncRouterMap
  * @param authRules
  */
-function filterAsyncRouter (asyncRouterMap, authRules) {
-    const accessedRouters = asyncRouterMap.filter(route => {
-        if (hasRouterRole(authRules, route)) {
-            if (route.children && route.children.length) {
-                route.children = filterAsyncRouter(route.children, authRules);
-            }
-            return true;
-        }
-        return false;
-    });
-    return accessedRouters;
+function filterAsyncRouter(asyncRouterMap, authRules) {
+  const accessedRouters = asyncRouterMap.filter(route => {
+    if (hasRouterRole(authRules, route)) {
+      if (route.children && route.children.length) {
+        route.children = filterAsyncRouter(route.children, authRules);
+      }
+      return true;
+    }
+    return false;
+  });
+  return accessedRouters;
 }
 
-function filterAsyncRouter1 (workerRouter, authRules) {
-    const accessedRouters = workerRouter.filter(route => {
-        if (hasRouterStaff(authRules, route)) {
-            if (route.children && route.children.length) {
-                route.children = filterAsyncRouter1(route.children, authRules);
-            }
-            return true;
-        }
-        return false;
-    });
-    return accessedRouters;
+function filterAsyncRouter1(workerRouter, authRules) {
+  const accessedRouters = workerRouter.filter(route => {
+    if (hasRouterStaff(authRules, route)) {
+      if (route.children && route.children.length) {
+        route.children = filterAsyncRouter1(route.children, authRules);
+      }
+      return true;
+    }
+    return false;
+  });
+  return accessedRouters;
 }
 // register global progress.
 const whiteList = ["/login", "/401", "/404", "/500", '/workerView']; // 不重定向白名单
 router.beforeEach((to, from, next) => {
-    NProgress.start(); // 开启Progress
-    if (whiteList.indexOf(to.path) !== -1) {
-        // 在免登录白名单，直接进入
-        next();
-        return;
+  NProgress.start(); // 开启Progress
+  if (whiteList.indexOf(to.path) !== -1) {
+    // 在免登录白名单，直接进入
+    next();
+    return;
+  }
+  let adminId = getAdminId()
+  if (adminId !== "undefined" && adminId !== "" && adminId) {
+    // 判断是否有token
+    if (to.path === "/login") {
+      next({
+        path: "/"
+      });
+      NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
+      return;
     }
-    let adminId = getAdminId()
-    if (adminId !== "undefined" && adminId !== "" && adminId) {
-        // 判断是否有token
-        if (to.path === "/login") {
-            next({
-                path: "/"
-            });
-            NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
-            return;
-        }
-        // if (
-        //     !store.getters.userName && sessionStorage.getItem('is_wmadmin') != 'undefined' &&
-        //     (!store.getters.authRules || store.getters.authRules.length === 0)
-        // ) {
+    // if (
+    //     !store.getters.userName && sessionStorage.getItem('is_wmadmin') != 'undefined' &&
+    //     (!store.getters.authRules || store.getters.authRules.length === 0)
+    // ) {
 
-        console.log(store.getters.userName)
-        console.log(!store.getters.authRules)
-        if (!store.getters.userName &&
-            (!store.getters.authRules || store.getters.authRules.length === 0)) {
-            // 判断当前用户是否已拉取完用户信息
-            store
-                .dispatch("userInfo")
-                .then(data => {
-                    let accessedRouters = []
-                    if (data) {
-                        if (data.is_wmadmin == 0 || sessionStorage.getItem('is_wmadmin') == 0) {
-                            let route = [...manageRouter, ...asyncRouterMap]
-                            accessedRouters = filterAsyncRouter(
-                                route,
-                                data.authRules
-                            );
-                        }
-                        if (data.is_wmadmin == 1 || sessionStorage.getItem('is_wmadmin') == 1) {
-                            accessedRouters = workerRouter
-                        }
-                        if (sessionStorage.getItem('is_wmadmin') == 'undefined' || !data.id) {
-                            Message.error("验证失败,请重新登录");
-                            next({
-                                path: "/login"
-                            });
-                            return
-                        }
-                    }
-                    sessionStorage.setItem('accessedRouters', JSON.stringify(accessedRouters))
-                    // 生成可访问的路由表
-                    if (!accessedRouters.length) {
-                        accessedRouters = JSON.parse(sessionStorage.getItem('accessedRouters'))
-                    }
-                    router.addRoutes(accessedRouters); // 动态添加可访问路由表
-                    next({
-                        ...to
-                    });
-                    // hack方法 确保addRoutes已完成
-                    // 设置左边导航栏
-                    store.dispatch("filterRouter", {
-                        accessedRouters
-                    })
-                        .then(() => { });
-                })
-                .catch(() => {
-                    store.dispatch("fedLogout").then(() => {
-                        Message.error("验证失败,请重新登录");
-                        // let redirect = to.fullPath;
-                        store.dispatch("loginOut").then(() => {
-                            next({
-                                path: "/login"
-                                // query: {
-                                //     redirect: redirect
-                                // }
-                            });
-                        });
-                    });
-                });
-            return;
-        }
-        // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
-        if (hasRole(store.getters.authRules, to.meta.authRule) || store.getters.is_wmadmin) {
-            next(); //
-            return;
-        }
-        next({
-            path: "/401",
-            query: {
-                noGoBack: true
+    console.log(store.getters.userName)
+    console.log(!store.getters.authRules)
+    if (!store.getters.userName &&
+      (!store.getters.authRules || store.getters.authRules.length === 0)) {
+      // 判断当前用户是否已拉取完用户信息
+      store
+        .dispatch("userInfo")
+        .then(data => {
+          let accessedRouters = []
+          if (data) {
+            if (data.is_wmadmin == 0 || sessionStorage.getItem('is_wmadmin') == 0) {
+              let route = [...manageRouter, ...asyncRouterMap]
+              accessedRouters = filterAsyncRouter(
+                route,
+                data.authRules
+              );
             }
+            if (data.is_wmadmin == 1 || sessionStorage.getItem('is_wmadmin') == 1) {
+              accessedRouters = workerRouter
+            }
+            if (data.is_wmadmin == 2 || sessionStorage.getItem('is_wmadmin') == 2) {
+              sessionStorage.setItem('zjjManageId', data.id)
+              accessedRouters = matterRouter
+            }
+            if (sessionStorage.getItem('is_wmadmin') == 'undefined' || !data.id) {
+              Message.error("验证失败,请重新登录");
+              next({
+                path: "/login"
+              });
+              return
+            }
+          }
+          sessionStorage.setItem('accessedRouters', JSON.stringify(accessedRouters))
+          // 生成可访问的路由表
+          if (!accessedRouters.length) {
+            accessedRouters = JSON.parse(sessionStorage.getItem('accessedRouters'))
+          }
+          router.addRoutes(accessedRouters); // 动态添加可访问路由表
+          next({
+            ...to
+          });
+          // hack方法 确保addRoutes已完成
+          // 设置左边导航栏
+          store.dispatch("filterRouter", {
+              accessedRouters
+            })
+            .then(() => {});
+        })
+        .catch(() => {
+          store.dispatch("fedLogout").then(() => {
+            Message.error("验证失败,请重新登录");
+            // let redirect = to.fullPath;
+            store.dispatch("loginOut").then(() => {
+              next({
+                path: "/login"
+                // query: {
+                //     redirect: redirect
+                // }
+              });
+            });
+          });
         });
-        NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
-        return;
+      return;
     }
-    // let redirect = to.fullPath;
-    store.dispatch("loginOut").then(() => {
-        sessionStorage.removeItem('is_wmadmin')
-        next({
-            path: "/login",
-            // query: {
-            //     redirect: redirect
-            // }
-        });
-    }); // 否则全部重定向到登录页
-    NProgress.done();
-    // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
+    // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
+    if (hasRole(store.getters.authRules, to.meta.authRule) || store.getters.is_wmadmin) {
+      next(); //
+      return;
+    }
+    next({
+      path: "/401",
+      query: {
+        noGoBack: true
+      }
+    });
+    NProgress.done(); // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
+    return;
+  }
+  // let redirect = to.fullPath;
+  // store.dispatch("loginOut").then(() => {
+  //     sessionStorage.removeItem('is_wmadmin')
+  //     next({
+  //         path: "/login",
+  //         // query: {
+  //         //     redirect: redirect
+  //         // }
+  //     });
+  // }); // 否则全部重定向到登录页
+  NProgress.done();
+  // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
 });
 
 router.afterEach(() => {
-    NProgress.done(); // 结束Progress
+  NProgress.done(); // 结束Progress
 });

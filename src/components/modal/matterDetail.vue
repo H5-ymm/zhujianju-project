@@ -59,7 +59,7 @@
 				</el-radio-group>
 			</el-form-item>
 			<el-form-item label="监督组">
-				<el-input class="width300" v-model="formData.Supervisiongroup" readonly></el-input>
+				<el-input class="width300" v-model="formData.nickname" readonly></el-input>
 			</el-form-item>
 		</el-form>
 	</el-dialog>

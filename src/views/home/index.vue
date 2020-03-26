@@ -190,10 +190,9 @@ export default {
       })
         .then(() => {
           this.$store.dispatch("loginOut").then(() => {
-            location.reload();
             this.$message.success('退出登录成功')
             this.$router.replace('/login')
-            // location.reload(); // 为了重新实例化vue-router对象 避免bug
+            location.reload(); // 为了重新实例化vue-router对象 避免bug
           });
         })
         .catch(() => {

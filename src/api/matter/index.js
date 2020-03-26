@@ -14,3 +14,6 @@ export function addItemmanage(query) {
 export function updateItemmanage(query) {
   return post("/itemmanage/edit", query)
 }
+export function getadmin_jdlist(query) {
+  return post("/itemmanage/getadmin_jdlist", query)
+}

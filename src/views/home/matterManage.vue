@@ -6,6 +6,7 @@
 			</el-form-item>
 			<el-form-item class="query-form-item">
 				<el-select v-model="query.status" placeholder="处理状态">
+					<el-option label="全部" value=""></el-option>
 					<el-option label="整改" value="1"></el-option>
 					<el-option label="待审核" value="2"></el-option>
 					<el-option label="已整改" value="3"></el-option>
@@ -17,7 +18,7 @@
 					<el-button
 						type="primary"
 						icon="el-icon-plus"
-						v-if="!is_wmadmin"
+						v-if="!is_wmadmin||is_wmadmin==2"
 						@click.native="handleForm(null, null)"
 					>新增</el-button>
 				</el-button-group>
@@ -141,7 +142,7 @@
 				</el-form-item>
 				<br>
 				<el-form-item label="违规照片" required>
-					<p class="prompt" v-if="!is_wmadmin">最多上传5张</p>
+					<p class="prompt" v-if="!is_wmadmin||is_wmadmin==2">最多上传5张</p>
 					<el-upload
 						:limit="5"
 						action="customize"
@@ -153,7 +154,7 @@
 						accept="bmg, .png, .jpg, .jpeg"
 						:before-upload="beforeUpload"
 						:http-request="upload"
-						v-if="!is_wmadmin"
+						v-if="!is_wmadmin||is_wmadmin==2"
 						@on-exceed="onExceed"
 					>
 						<div class="x-flex-start x-flex-wap el-upload-card">
@@ -185,7 +186,11 @@
 					</div>
 				</el-form-item>
 				<br>
-				<el-form-item label="整改照片" required v-if="itemId&&is_wmadmin">
+				<el-form-item
+					label="整改照片"
+					required
+					v-if="itemId&&(!is_wmadmin||is_wmadmin==2) && uploadData.length"
+				>
 					<p class="prompt">最多上传5张</p>
 					<el-upload
 						:limit="5"
@@ -228,7 +233,7 @@
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="处理状态" v-if="itemId&&!is_wmadmin">
+				<el-form-item label="处理状态" v-if="itemId&&(!is_wmadmin||is_wmadmin==2)">
 					<el-radio-group class="width300" v-model="formData.status">
 						<el-radio :label="1" :disabled="formData.status==3">待整改</el-radio>
 						<el-radio :label="2" disabled>待审核</el-radio>
@@ -236,12 +241,35 @@
 						<el-radio :label="4" :disabled="formData.status<2">已退回</el-radio>
 					</el-radio-group>
 				</el-form-item>
-				<el-form-item label="监督组" prop="Supervisiongroup">
+				<el-form-item label="监督组" v-if="is_wmadmin!=2" required>
+					<el-select
+						v-model="Supervisiongroup"
+						class="width300"
+						filterable
+						:disabled="formData.status==3||is_wmadmin==1"
+						allow-create
+						@change="changeSupervisiongroup"
+						default-first-option
+						placeholder="请输入新增/选择设置监督组"
+					>
+						<el-option v-for="item in options1" :key="item.id" :label="item.nickname" :value="item.id"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="用户名" required v-if="formData.nickname&&!isAdd&&!itemId">
 					<el-input
 						class="width300"
 						:readonly="formData.status==3||is_wmadmin==1"
-						placeholder="请输入监督组"
-						v-model="formData.Supervisiongroup"
+						placeholder="请输入用户名"
+						v-model="formData.username"
+						auto-complete="off"
+					></el-input>
+				</el-form-item>
+				<el-form-item label="密码" required v-if="formData.nickname&&!isAdd&&!itemId">
+					<el-input
+						class="width300"
+						:readonly="formData.status==3||is_wmadmin==1"
+						placeholder="请输入密码"
+						v-model="formData.password"
 						auto-complete="off"
 					></el-input>
 				</el-form-item>
@@ -270,11 +298,12 @@ import {
 	getItemmanage,
 	addItemmanage,
 	updateItemmanage,
-	getItemmanageDetail
+	getItemmanageDetail,
+	getadmin_jdlist
 } from "../../api/matter/index";
 import matterDetail from "../../components/modal/matterDetail.vue";
 import { geTypeAll, uploadF } from "../../api/file/data"
-import { getImg } from "../../utils/util.js";
+import { getImg, checkNum } from "../../utils/util.js";
 import vueEasyPrint from "../../components/vue-easy-print";
 import workerTable from "../../components/workerTable";
 import imageConversion from 'image-conversion'
@@ -330,10 +359,7 @@ export default {
 				],
 				description: [
 					{ required: true, message: "请输入内容描述", trigger: "change" }
-				],
-				Supervisiongroup: [
-					{ required: true, message: "请输入监督组", trigger: "blur" }
-				],
+				]
 			},
 			deleteLoading: false,
 			checkObj: {},
@@ -342,7 +368,11 @@ export default {
 			uploadData: [],
 			projectList: [],
 			arr: [],
-			arr1: []
+			arr1: [],
+			options1: [],
+			isAdd: false,
+			nickname: '',
+			Supervisiongroup: ''
 		};
 	},
 	computed: {
@@ -360,9 +390,36 @@ export default {
 			this.options = res
 		})
 		this.getProject()
+		this.getOptions()
 	},
 	methods: {
 		getImg,
+		getOptions() {
+			getadmin_jdlist().then(res => {
+				console.log(res)
+				this.options1 = res
+				if (this.is_wmadmin == 2) {
+					this.options1.forEach(item => {
+						if (item.id == sessionStorage.getItem('zjjManageId')) {
+							this.nickname = item.nickname
+							this.formData.Supervisiongroup = item.id
+						}
+					})
+				}
+			})
+		},
+		changeSupervisiongroup(val) {
+			console.log(val)
+			if (checkNum(val)) {
+				this.isAdd = true
+				this.formData.Supervisiongroup = val
+			} else {
+				this.formData.nickname = val
+				this.isAdd = false
+				this.formData.Supervisiongroup = ''
+			}
+			console.log(this.isAdd)
+		},
 		onExceed() {
 			this.$message.error("最多上传5张")
 		},
@@ -550,6 +607,8 @@ export default {
 					this.$message.success("操作成功");
 					this.formVisible = false;
 					this.fileList = []
+					this.arr = []
+					this.arr1 = []
 					this.uploadData = []
 					this.getList()
 				} else {
@@ -566,9 +625,21 @@ export default {
 					}
 					this.formLoading = true;
 					let data = Object.assign({}, this.formData);
-					if (!data.id) {
+					if (!this.is_wmadmin) {
+						if (!this.Supervisiongroup) {
+							return this.$message.warning('请设置监督组')
+						}
+					}
+					if (!this.itemId) {
+						if (this.isAdd && this.formData.nickname) {
+							if (!this.formData.username) {
+								return this.$message.warning('请输入用户名')
+							}
+							if (!this.formData.password) {
+								return this.$message.warning('请输入密码')
+							}
+						}
 						this.addUser(data)
-						location.reload()
 					} else {
 						if (this.is_wmadmin == 1) {
 							data.wg_img = this.fileList
@@ -579,7 +650,6 @@ export default {
 									return this.$message.error(response.message)
 								}
 								this.formLoading = false;
-								location.reload()
 								this.$message.success("操作成功");
 								this.formVisible = false;
 								this.$set(this, 'fileList', [])

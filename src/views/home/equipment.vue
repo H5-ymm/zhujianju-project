@@ -4,7 +4,7 @@
 			<el-form-item class="query-form-item">
 				<el-input v-model="query.keyword" class="width200" placeholder="请输入设备编号"></el-input>
 			</el-form-item>
-			<el-form-item>
+			<el-form-item v-if="!is_wmadmin">
 				<el-select v-model="query.item_id" filterable class="width300" placeholder="请选择项目名称">
 					<el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>

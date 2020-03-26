@@ -218,6 +218,19 @@ export const workerRouter = [{
     }]
   }
 ]
+
+export const matterRouter = [{
+  path: "/readme",
+  component: Home,
+  redirect: "/readme/matterManage",
+  icon: "daibanshixiang",
+  name: "事项管理",
+  noDropdown: true,
+  children: [{
+    path: 'matterManage',
+    component: matterManage
+  }]
+}]
 export default new VueRouter({
   // mode: 'history', //后端支持可开
   mode: ROUTER_MODE,
