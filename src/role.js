@@ -187,15 +187,15 @@ router.beforeEach((to, from, next) => {
     return;
   }
   // let redirect = to.fullPath;
-  // store.dispatch("loginOut").then(() => {
-  //     sessionStorage.removeItem('is_wmadmin')
-  //     next({
-  //         path: "/login",
-  //         // query: {
-  //         //     redirect: redirect
-  //         // }
-  //     });
-  // }); // 否则全部重定向到登录页
+  store.dispatch("loginOut").then(() => {
+    sessionStorage.removeItem('is_wmadmin')
+    next({
+      path: "/login",
+      // query: {
+      //     redirect: redirect
+      // }
+    });
+  }); // 否则全部重定向到登录页
   NProgress.done();
   // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
 });

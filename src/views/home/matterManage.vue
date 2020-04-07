@@ -250,16 +250,16 @@
 						allow-create
 						@change="changeSupervisiongroup"
 						default-first-option
-						placeholder="请输入新增/选择设置监督组"
+						placeholder="请新增输入/选择监督组"
 					>
 						<el-option v-for="item in options1" :key="item.id" :label="item.nickname" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="用户名" required v-if="formData.nickname&&!isAdd&&!itemId">
+				<el-form-item label="账号" required v-if="formData.nickname&&!isAdd&&!itemId">
 					<el-input
 						class="width300"
 						:readonly="formData.status==3||is_wmadmin==1"
-						placeholder="请输入用户名"
+						placeholder="请输入账号"
 						v-model="formData.username"
 						auto-complete="off"
 					></el-input>
@@ -418,7 +418,6 @@ export default {
 				this.isAdd = false
 				this.formData.Supervisiongroup = ''
 			}
-			console.log(this.isAdd)
 		},
 		onExceed() {
 			this.$message.error("最多上传5张")
@@ -535,6 +534,8 @@ export default {
 			getItemmanage(this.query)
 				.then(response => {
 					this.loading = false;
+					this.arr = []
+					this.arr1 = []
 					this.list = response.data || [];
 					this.total = response.count || 0;
 				})
@@ -544,6 +545,8 @@ export default {
 					this.fileList = []
 					this.uploadData = []
 					this.total = 0;
+					this.arr = []
+					this.arr1 = []
 				});
 		},
 		// 刷新表单
@@ -633,7 +636,7 @@ export default {
 					if (!this.itemId) {
 						if (this.isAdd && this.formData.nickname) {
 							if (!this.formData.username) {
-								return this.$message.warning('请输入用户名')
+								return this.$message.warning('请输入账号')
 							}
 							if (!this.formData.password) {
 								return this.$message.warning('请输入密码')
@@ -645,13 +648,12 @@ export default {
 							data.wg_img = this.fileList
 						}
 						updateItemmanage(data).then(response => {
+							this.formVisible = false;
 							if (response) {
 								if (response.code) {
 									return this.$message.error(response.message)
 								}
-								this.formLoading = false;
 								this.$message.success("操作成功");
-								this.formVisible = false;
 								this.$set(this, 'fileList', [])
 								this.getList()
 							} else {

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="user-box">
     <el-form :inline="true" :model="query" class="query-form">
       <el-form-item class="query-form-item">
         <el-input v-model="query.username" placeholder="用户名"></el-input>
@@ -30,10 +30,11 @@
       class="common-table"
       :data="list"
       style="width: 100%;"
-      max-height="500"
+      max-height="800"
     >
       <el-table-column label="用户 ID" align="center" prop="id" fixed></el-table-column>
       <el-table-column label="用户名" prop="username" align="center" fixed></el-table-column>
+      <el-table-column label="昵称" prop="nickname" align="center" fixed></el-table-column>
       <!-- <el-table-column label="状态" align="center">
         <template slot-scope="scope">
           <el-tag
@@ -71,23 +72,20 @@
         <el-form-item label="用户名" prop="username">
           <el-input v-model="formData.username" auto-complete="off"></el-input>
         </el-form-item>
+        <el-form-item label="昵称" prop="nickname">
+          <el-input v-model="formData.nickname" auto-complete="off"></el-input>
+        </el-form-item>
         <el-form-item label="登录密码" prop="password">
           <el-input type="password" v-model="formData.password" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="确认密码" prop="checkPassword">
           <el-input type="password" v-model="formData.checkPassword" auto-complete="off"></el-input>
         </el-form-item>
-        <!-- <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="formData.status">
-            <el-radio :label="0">正常</el-radio>
-            <el-radio :label="1">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>-->
-        <!-- <el-form-item label="角色" required>
-          <el-checkbox-group v-model="rolesList">
-            <el-checkbox v-for="item in roles" :key="item.id" :label="item.id">{{item.name}}</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>-->
+        <el-form-item label="角色">
+          <el-select v-model="formData.is_wmadmin" clearable placeholder="请选择角色">
+            <el-option label="监督组" value="2"></el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click.native="hideForm">取消</el-button>
@@ -108,7 +106,9 @@ const formJson = {
   password: "",
   username: "",
   status: 0,
-  roles: ''
+  roles: '',
+  is_wmadmin: '',
+  nickname: ''
 };
 export default {
   data() {
@@ -155,6 +155,8 @@ export default {
         username: [
           { required: true, message: "请输入姓名", trigger: "blur" }
         ],
+        nickname: [
+          { required: true, message: "请输入昵称", trigger: "blur" }],
         password: [
           { required: true, message: "请输入密码", trigger: "blur" },
           { validator: validatePass, trigger: "blur" }
@@ -166,18 +168,14 @@ export default {
             trigger: "blur"
           },
           { validator: validatePass2, trigger: "blur" }
-        ],
-        // status: [
-        //   { required: true, message: "请选择状态", trigger: "change" }
-        // ]
+        ]
       },
       editRules: {
         username: [
           { required: true, message: "请输入姓名", trigger: "blur" }
         ],
-        // status: [
-        //   { required: true, message: "请选择状态", trigger: "change" }
-        // ]
+        nickname: [
+          { required: true, message: "请输入昵称", trigger: "blur" }]
       },
       deleteLoading: false
     };
@@ -299,7 +297,8 @@ export default {
             authAdminDelete(para)
               .then(response => {
                 this.deleteLoading = false;
-                if (response.data) {
+                console.log(response)
+                if (response == 'SUCCESS') {
                   this.getList()
                   this.$message.success("操作成功")
                 } else {
@@ -345,6 +344,11 @@ export default {
 };
 </script>
 <style lang="scss">
+.user-box {
+  .el-select {
+    width: 100%;
+  }
+}
 .query-form {
   .el-input--suffix .el-input__inner {
     padding-right: 35px;
